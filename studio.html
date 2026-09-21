@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>女孩宇宙 · 故事生产间 v3.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=IBM+Plex+Sans+SC:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* 马卡龙色系 */
+    --bg: #FFF7EF;
+    --bg-dot: #F4E5D5;
+    --bg-2: #FBEFE2;
+    --card: #FFFFFF;
+    --ink: #4A3B33;
+    --ink-2: #7C6C60;
+    --ink-3: #AC9C8E;
+    --ink-4: #CFBFB1;
+    --line: #F0E2D2;
+    --line-soft: #F7ECDF;
+    --shadow: 0 6px 22px rgba(190, 150, 110, .13);
+    --shadow-sm: 0 3px 10px rgba(190, 150, 110, .12);
+
+    --pink: #FBD3E0;    --pink-d: #D9678F;    --pink-dd: #8A3A5C;
+    --mint: #C8ECDA;    --mint-d: #3FA98A;    --mint-dd: #22685A;
+    --lemon: #FBE8AE;   --lemon-d: #C9A227;   --lemon-dd: #7E6714;
+    --lilac: #E0CCF2;   --lilac-d: #9A6FD0;   --lilac-dd: #5E3E85;
+    --peach: #FFDCC2;   --peach-d: #E8834F;   --peach-dd: #94491F;
+    --sky: #C9E2FF;     --sky-d: #5B8FD9;     --sky-dd: #2F5687;
+
+    --ok: var(--mint-d); --warn: var(--lemon-d); --bad: #E06A5A;
+
+    --disp: 'ZCOOL KuaiLe', 'IBM Plex Sans SC', 'PingFang SC', sans-serif;
+    --sans: 'IBM Plex Sans SC', 'PingFang SC', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans); color: var(--ink); font-size: 14px; line-height: 1.7; overflow: hidden;
+    background: var(--bg);
+    background-image: radial-gradient(var(--bg-dot) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; color: inherit; }
+  .hidden { display: none !important; }
+  .mono { font-family: var(--mono); }
+
+  .app { display: grid; grid-template-columns: 218px 1fr; height: 100vh; }
+
+  /* ================= 侧边栏 ================= */
+  .sidebar {
+    background: linear-gradient(180deg, #FFF3E4 0%, #FBEADF 100%);
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; padding: 26px 0 20px;
+  }
+  .brand { padding: 0 22px 24px; border-bottom: 1px dashed var(--line); }
+  .brand-row { display: flex; align-items: center; gap: 8px; }
+  .brand-moon { font-size: 22px; }
+  .brand-title { font-family: var(--disp); font-size: 22px; letter-spacing: .02em; color: var(--ink); }
+  .brand-sub { font-size: 10px; letter-spacing: .16em; color: var(--ink-3); margin-top: 6px; font-family: var(--mono); }
+  .nav { padding: 18px 14px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+    border-radius: 14px; color: var(--ink-2); font-size: 14.5px; width: 100%; text-align: left;
+    transition: all .18s ease; font-weight: 500;
+  }
+  .nav-item:hover { transform: translateX(3px); color: var(--ink); }
+  .nav-item .ni-emoji { font-size: 16px; }
+  .nav-item.active[data-page="workshop"] { background: var(--pink); color: var(--pink-dd); }
+  .nav-item.active[data-page="library"]  { background: var(--mint); color: var(--mint-dd); }
+  .nav-item.active[data-page="player"]   { background: var(--lilac); color: var(--lilac-dd); }
+  .nav-item.active[data-page="settings"] { background: var(--lemon); color: var(--lemon-dd); }
+  .sidebar-foot { padding: 14px 22px 0; border-top: 1px dashed var(--line); font-size: 12px; color: var(--ink-3); }
+  .api-row { display: flex; align-items: center; gap: 7px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); flex: none; }
+  .dot.on { background: var(--mint-d); box-shadow: 0 0 0 3px var(--mint); }
+  .foot-ver { margin-top: 5px; color: var(--ink-4); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; }
+
+  /* ================= 页面骨架 ================= */
+  .main { overflow-y: auto; overflow-x: hidden; }
+  .page-header { padding: 30px 46px 20px; position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px dashed var(--line); }
+  .page-header::after { content:''; position:absolute; left:46px; right:46px; bottom:-1px; }
+  .crumb { font-family: var(--mono); font-size: 10px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-family: var(--disp); font-weight: 400; font-size: 32px; line-height: 1.2; display: flex; align-items: center; gap: 10px; }
+  .page-title .pt-emoji { font-size: 26px; }
+  .page-desc { color: var(--ink-2); margin-top: 6px; max-width: 700px; font-size: 13.5px; }
+  .page-body { padding: 28px 46px 100px; }
+
+  /* ================= 通用组件 ================= */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 22px; box-shadow: var(--shadow-sm); }
+  .card + .card { margin-top: 18px; }
+  .card-title { font-family: var(--disp); font-size: 17px; display: flex; align-items: center; gap: 7px; }
+  .card-hint { font-size: 12px; color: var(--ink-3); margin: 3px 0 14px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+    border: 1.5px solid var(--line); background: var(--card); transition: all .18s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--ink-4); }
+  .btn:active { transform: translateY(0); }
+  .btn.primary { background: linear-gradient(135deg, var(--pink) 0%, #F9C6B4 100%); border-color: transparent; color: var(--pink-dd); }
+  .btn.primary:hover { box-shadow: 0 6px 18px rgba(217,103,143,.28); }
+  .btn.mint { background: var(--mint); border-color: transparent; color: var(--mint-dd); }
+  .btn.lilac { background: var(--lilac); border-color: transparent; color: var(--lilac-dd); }
+  .btn.sm { padding: 5px 12px; font-size: 12px; }
+  .btn.xl { padding: 13px 26px; font-size: 15px; font-family: var(--disp); letter-spacing: .05em; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 500; }
+
+  .field { margin-bottom: 15px; }
+  .field > label { display: block; font-size: 13px; color: var(--ink); margin-bottom: 6px; font-weight: 600; }
+  .field .f-hint { font-size: 11.5px; color: var(--ink-3); font-weight: 400; margin-left: 6px; }
+  .field input[type=text], .field input[type=password], .field input[type=number], .field textarea, .field select {
+    width: 100%; padding: 9px 13px; border: 1.5px solid var(--line); border-radius: 12px;
+    background: #FFFDFA; font-size: 13.5px; outline: none; transition: all .18s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--pink-d); box-shadow: 0 0 0 3px var(--pink); }
+  .field textarea { resize: vertical; min-height: 56px; }
+  .field.inline { display: flex; gap: 12px; align-items: center; }
+  .field.inline label { margin: 0; width: 110px; flex: none; }
+
+  .switch { position: relative; width: 40px; height: 22px; flex: none; display: inline-block; }
+  .switch input { opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer; z-index: 2; margin: 0; }
+  .switch .track { position: absolute; inset: 0; background: var(--line); border-radius: 99px; transition: .18s; }
+  .switch .knob { position: absolute; top: 2.5px; left: 2.5px; width: 17px; height: 17px; background: #fff; border-radius: 50%; transition: .18s; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .switch input:checked ~ .track { background: var(--mint-d); }
+  .switch input:checked ~ .knob { left: 20.5px; }
+
+  /* ================= 工坊 ================= */
+  .ws-grid { display: grid; grid-template-columns: 380px 1fr; gap: 22px; align-items: start; }
+  .protag-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .protag-card {
+    border: 2px solid var(--line); border-radius: 18px; padding: 13px 6px 11px; text-align: center;
+    transition: all .2s ease; position: relative; background: #FFFDF9;
+  }
+  .protag-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+  .protag-card.sel-p0 { border-color: var(--mint-d); background: linear-gradient(160deg, #F0FAF4 0%, var(--mint) 130%); box-shadow: 0 5px 16px rgba(63,169,138,.22); }
+  .protag-card.sel-p1 { border-color: var(--peach-d); background: linear-gradient(160deg, #FFF3E8 0%, var(--peach) 130%); box-shadow: 0 5px 16px rgba(232,131,79,.22); }
+  .protag-card.sel-p2 { border-color: var(--lilac-d); background: linear-gradient(160deg, #F5EEFB 0%, var(--lilac) 130%); box-shadow: 0 5px 16px rgba(154,111,208,.22); }
+  .protag-emoji { font-size: 24px; }
+  .protag-name { font-family: var(--disp); font-size: 15px; margin-top: 2px; }
+  .protag-tag { font-size: 10.5px; color: var(--ink-2); line-height: 1.4; }
+  .protag-ord { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-size: 10.5px; padding: 2px 9px; border-radius: 99px; background: var(--ink); color: #FFF6EC; white-space: nowrap; font-weight: 500; }
+
+  .motif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+  .motif-chip {
+    border: 2px solid var(--line); border-radius: 16px; padding: 10px 5px 8px; text-align: center;
+    background: #FFFDF9; transition: all .2s ease; position: relative;
+  }
+  .motif-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--ink-4); }
+  .motif-chip.sel { border-color: var(--pink-d); background: linear-gradient(160deg, #FFF0F4 0%, var(--pink) 140%); box-shadow: 0 5px 16px rgba(217,103,143,.25); }
+  .motif-chip.blocked { opacity: .5; }
+  .motif-chip.blocked::after {
+    content: attr(data-block); position: absolute; top: -8px; right: 6px; font-size: 9px;
+    background: var(--bad); color: #fff; padding: 1px 7px; border-radius: 99px;
+  }
+  .motif-emoji { font-size: 17px; }
+  .motif-name { font-family: var(--disp); font-size: 13px; }
+  .motif-desc { font-size: 10px; color: var(--ink-3); line-height: 1.35; margin-top: 1px; }
+  .schedule-note { margin-top: 12px; font-size: 12.5px; padding: 11px 14px; border-radius: 14px; background: var(--bg-2); color: var(--ink-2); line-height: 1.6; }
+  .toggle-card { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 15px; border: 1.5px dashed var(--line); border-radius: 14px; margin: 4px 0 15px; }
+  .toggle-card .tc-body b { font-size: 13px; display: block; }
+  .toggle-card .tc-body span { font-size: 11px; color: var(--ink-3); }
+
+  .banner {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    background: var(--lemon); color: var(--lemon-dd); border-radius: 16px;
+    padding: 11px 16px; font-size: 13px; margin-bottom: 18px; font-weight: 500;
+  }
+  .banner button { color: var(--lemon-dd); text-decoration: underline; font-size: 13px; font-weight: 600; }
+
+  .stream-box { background: #4A3B33; color: #F3E7D8; border-radius: 16px; padding: 18px; font-family: var(--mono); font-size: 12px; line-height: 1.75; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
+  details.prompt-det { margin-top: 14px; }
+  details.prompt-det summary { cursor: pointer; font-size: 12px; color: var(--ink-3); user-select: none; }
+  details.prompt-det pre { margin-top: 10px; background: var(--bg-2); border-radius: 12px; padding: 14px; font-family: var(--mono); font-size: 11px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; }
+
+  .result-head { border-bottom: 1px dashed var(--line); padding-bottom: 16px; margin-bottom: 16px; }
+  .result-title { font-family: var(--disp); font-size: 26px; line-height: 1.3; }
+  .result-sub { color: var(--ink-2); margin-top: 2px; font-size: 13.5px; }
+  .result-culture { margin-top: 10px; font-size: 12.5px; color: var(--ink-2); background: var(--bg-2); border-radius: 12px; padding: 9px 13px; }
+  .meta-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+  .story-text { font-size: 15.5px; line-height: 2.0; white-space: pre-wrap; }
+  .story-text .sep { color: var(--ink-4); display: block; text-align: center; letter-spacing: .4em; }
+
+  .check-list { display: flex; flex-direction: column; gap: 7px; }
+  .check-item { display: flex; gap: 9px; align-items: flex-start; padding: 9px 13px; border-radius: 12px; font-size: 12.5px; line-height: 1.55; }
+  .check-item.pass { background: #EDF9F2; color: var(--mint-dd); }
+  .check-item.warn { background: #FDF4DC; color: var(--lemon-dd); }
+  .check-item.fail { background: #FDE8E2; color: #A03D2C; }
+  .check-item .ci-ico { flex: none; font-weight: 700; }
+  .check-item .ci-body b { font-weight: 600; }
+  .check-item .ci-body .ev { font-family: var(--mono); font-size: 10.5px; opacity: .8; display: block; margin-top: 2px; word-break: break-all; }
+  .action-bar { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+
+  .empty { color: var(--ink-3); font-size: 13.5px; padding: 34px 0; text-align: center; line-height: 2; }
+  .empty .e-emoji { font-size: 36px; display: block; margin-bottom: 8px; filter: saturate(.85); }
+
+  /* ================= 故事库 ================= */
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-chip { padding: 5px 14px; border-radius: 99px; border: 1.5px solid var(--line); font-size: 12px; background: var(--card); transition: all .15s; color: var(--ink-2); }
+  .filter-chip:hover { border-color: var(--ink-4); }
+  .filter-chip.on { background: var(--ink); color: #FFF6EC; border-color: var(--ink); }
+  .ep-item { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border: 1.5px solid var(--line); border-radius: 18px; background: var(--card); margin-bottom: 11px; transition: all .18s; box-shadow: var(--shadow-sm); }
+  .ep-item:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .ep-cover { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 21px; flex: none; }
+  .ep-main { flex: 1; min-width: 0; }
+  .ep-title { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ep-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+  .ep-ops { display: flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; max-width: 320px; }
+  .status-pill { padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .st-generating { background: var(--lemon); color: var(--lemon-dd); }
+  .st-draft { background: var(--pink); color: var(--pink-dd); }
+  .st-approved { background: #EDF9F2; color: var(--mint-dd); }
+  .st-audio { background: var(--sky); color: var(--sky-dd); }
+  .st-ready { background: var(--lilac); color: var(--lilac-dd); }
+  .st-failed { background: #FDE8E2; color: #A03D2C; }
+  .st-generating .sp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lemon-dd); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .sched-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
+  .sched-cell { border-radius: 14px; padding: 8px 13px; font-size: 12px; min-width: 96px; }
+  .sched-cell .sc-date { font-family: var(--mono); font-size: 9.5px; opacity: .7; }
+  .sched-cell .sc-name { font-weight: 600; font-size: 12.5px; }
+  .rule-row { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--line-soft); }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-id { font-family: var(--mono); font-size: 10px; color: var(--ink-4); width: 24px; flex: none; }
+
+  /* ================= 小电台 ================= */
+  .radio-stage { display: flex; gap: 26px; align-items: flex-start; }
+  .disc-wrap { flex: none; text-align: center; }
+  .disc { width: 190px; height: 190px; border-radius: 50%; position: relative; margin: 6px auto 12px;
+    background: repeating-radial-gradient(circle at 50% 50%, #57453A 0 3px, #4A3B33 3px 6px);
+    box-shadow: 0 10px 28px rgba(74,59,51,.35), inset 0 0 0 6px #3A2E27; transition: box-shadow .3s; }
+  .disc::before { content:''; position: absolute; inset: 34%; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--lilac)); }
+  .disc::after { content:''; position: absolute; inset: 47.5%; border-radius: 50%; background: #FFF7EF; }
+  .disc.spin { animation: spin 3.2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .track-info { flex: 1; min-width: 0; }
+  .track-title { font-family: var(--disp); font-size: 27px; line-height: 1.3; }
+  .track-sub { color: var(--ink-2); margin-top: 3px; font-size: 14px; }
+  .track-culture { margin-top: 10px; font-size: 12.5px; color: var(--ink-2); background: var(--bg-2); border-radius: 12px; padding: 9px 13px; }
+  .player-ctl { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+  .pbtn { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); display: inline-flex; align-items: center; justify-content: center; font-size: 15px; transition: all .18s; box-shadow: var(--shadow-sm); }
+  .pbtn:hover { transform: translateY(-2px); }
+  .pbtn.main { width: 58px; height: 58px; background: linear-gradient(135deg, var(--pink) 0%, var(--lilac) 100%); border-color: transparent; color: #fff; font-size: 21px; box-shadow: 0 8px 22px rgba(217,103,143,.35); }
+  .seek-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+  .seek { flex: 1; -webkit-appearance: none; appearance: none; height: 7px; border-radius: 99px; background: linear-gradient(90deg, var(--pink) var(--prog,0%), var(--line) var(--prog,0%)); outline: none; }
+  .seek::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid var(--pink-d); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .time-mono { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); min-width: 40px; }
+  .rate-box { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .rate-box select { padding: 6px 10px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--card); font-size: 12.5px; outline: none; }
+  input[type=range].plain { accent-color: var(--pink-d); width: 120px; }
+  .voice-box { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .voice-box select { padding: 7px 12px; border: 1.5px solid var(--line); border-radius: 99px; background: var(--card); font-size: 12.5px; max-width: 200px; }
+  .sent-list { font-size: 16.5px; line-height: 2.15; }
+  .sent { border-radius: 6px; padding: 0 3px; transition: background .2s; }
+  .sent.now { background: var(--pink); box-shadow: 0 0 0 1.5px var(--pink-d); }
+  .sent-done { color: var(--ink-4); }
+  .pause-mark { display: block; text-align: center; color: var(--ink-4); letter-spacing: .4em; margin: 6px 0; }
+  .mode-tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: var(--bg-2); color: var(--ink-3); }
+
+  /* ================= 设置 ================= */
+  .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 99px; overflow: hidden; background: var(--card); }
+  .seg button { padding: 7px 18px; font-size: 13px; }
+  .seg button.on { background: var(--ink); color: #FFF6EC; }
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .agent-card { border-radius: 18px; padding: 18px; border: 2px solid; }
+  .agent-card.a-planner { border-color: var(--lemon); background: linear-gradient(165deg, #FFFBEF 0%, var(--lemon) 160%); }
+  .agent-card.a-writer { border-color: var(--pink); background: linear-gradient(165deg, #FFF4F7 0%, var(--pink) 160%); }
+  .agent-card.a-judge { border-color: var(--sky); background: linear-gradient(165deg, #F2F8FF 0%, var(--sky) 160%); }
+  .agent-card .ag-name { font-family: var(--disp); font-size: 16px; display: flex; gap: 7px; align-items: center; }
+  .agent-card .ag-desc { font-size: 11.5px; color: var(--ink-2); margin: 3px 0 12px; line-height: 1.5; }
+  .agent-card .field input, .agent-card .field textarea, .agent-card .field select { background: rgba(255,255,255,.75); }
+  .agent-card .field textarea { font-size: 11px; font-family: var(--mono); min-height: 84px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--pink-d); }
+
+  /* ================= 弹窗 ================= */
+  .modal-mask { position: fixed; inset: 0; background: rgba(74,59,51,.35); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 24px; }
+  .modal { background: var(--card); border-radius: 22px; width: min(860px, 100%); max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(74,59,51,.3); overflow: hidden; }
+  .modal-head { padding: 18px 24px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--line); }
+  .modal-head .mh-title { font-family: var(--disp); font-size: 19px; flex: 1; }
+  .modal-body { padding: 18px 24px; overflow-y: auto; }
+  .modal-foot { padding: 14px 24px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px dashed var(--line); }
+
+  /* ================= Toast ================= */
+  #toasts { position: fixed; bottom: 26px; right: 26px; display: flex; flex-direction: column; gap: 9px; z-index: 99; }
+  .toast { background: var(--ink); color: #FFF6EC; padding: 11px 18px; border-radius: 99px; font-size: 13px; box-shadow: 0 8px 26px rgba(74,59,51,.3); animation: pop .22s cubic-bezier(.34,1.56,.64,1); max-width: 400px; }
+  .toast.warn { background: var(--lemon-dd); }
+  .toast.err { background: var(--bad); }
+  @keyframes pop { from { transform: translateY(10px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 99px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  @media (max-width: 1080px) {
+    .ws-grid { grid-template-columns: 1fr; }
+    .radio-stage { flex-direction: column; align-items: center; }
+    .page-header, .page-body { padding-left: 22px; padding-right: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-row"><span class="brand-moon">🌙</span><span class="brand-title">女孩宇宙</span></div>
+      <div class="brand-sub">STORY STUDIO · v3.1</div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-page="workshop"><span class="ni-emoji">🎨</span>创意工坊</button>
+      <button class="nav-item" data-page="library"><span class="ni-emoji">📚</span>故事库</button>
+      <button class="nav-item" data-page="player"><span class="ni-emoji">📻</span>小电台</button>
+      <button class="nav-item" data-page="settings"><span class="ni-emoji">⚙️</span>设置</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="api-row"><span class="dot" id="apiDot"></span><span id="apiStatusText">AI 钥匙未填</span></div>
+      <div class="foot-ver">prompt v3.0 · macaron</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+  <!-- ================= 🎨 创意工坊 ================= -->
+  <section class="page" data-page="workshop">
+    <div class="page-header">
+      <div class="crumb">Workshop</div>
+      <h1 class="page-title"><span class="pt-emoji">🎨</span>创意工坊</h1>
+      <p class="page-desc">选一个女孩、挑一种故事、定一个地方——剩下的交给 AI 写。写好的故事会自动存进故事库。</p>
+    </div>
+    <div class="page-body">
+      <div class="banner hidden" id="noKeyBanner">🍪 还没有填 AI 钥匙,写不了新故事。<button data-goto="settings">去设置填一下 →</button>或者先<button id="btnSample" style="text-decoration:underline">看看一个写好的示例</button></div>
+      <div class="ws-grid">
+        <div>
+          <div class="card">
+            <div class="card-title">👋 今天的主角</div>
+            <div class="card-hint">先点的是主角;再点别人,就是来一起玩的伙伴</div>
+            <div class="protag-row" id="protagRow"></div>
+            <div class="schedule-note" style="margin-top:12px">🌱 小满 9 岁 · 昆虫化石观察员&nbsp;&nbsp;🔧 一帆 10 岁 · 会修东西的行动派&nbsp;&nbsp;📖 乐知 9 岁 · 满脑子故事</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🧸 讲一个什么样的故事</div>
+            <div class="card-hint">九种味道,选一个今天的心情</div>
+            <div class="motif-grid" id="motifGrid"></div>
+            <div class="schedule-note" id="motifNote">选好后,这里会告诉你今天的节奏安排合不合适。</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📍 故事发生在哪儿</div>
+            <div class="card-hint">真实世界的一个角落,当地的风物会变成故事的一部分</div>
+            <div class="field" style="margin-bottom:8px">
+              <div style="display:flex;gap:8px">
+                <input type="text" id="inpLocation" placeholder="比如:冰岛的小渔村 / 北京胡同 / 云南外婆家" style="flex:1">
+                <button class="btn sm" id="btnLoc" style="flex:none">🎲</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>💭 这个故事讲什么 <span class="f-hint">可以留空,点 ✨ 帮你想</span></label>
+              <div style="display:flex;gap:8px">
+                <textarea id="inpEvent" placeholder="一句话:谁,想做什么,遇到了什么难处" style="flex:1"></textarea>
+                <button class="btn sm" id="btnAIEvent" style="flex:none;align-self:flex-end">✨</button>
+              </div>
+            </div>
+            <div class="toggle-card">
+              <div class="tc-body"><b>🎀 结尾彩蛋 · 长辈的小时候</b><span>故事快结束时,一位奶奶或阿姨说起自己小时候的一件事,不点破,只是悄悄呼应</span></div>
+              <label class="switch"><input type="checkbox" id="tgLegacy"><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <div class="field">
+              <label>🍭 特别想要的元素 <span class="f-hint">可选</span></label>
+              <input type="text" id="inpSpecial" placeholder="比如:出现一只小动物">
+            </div>
+            <div class="action-bar" style="margin-top:16px">
+              <button class="btn xl" id="btnRandom">🎲 帮我选</button>
+              <button class="btn xl primary" id="btnGenerate" style="flex:1">✨ 开始写故事</button>
+              <button class="btn xl hidden" id="btnStop">⏹</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card hidden" id="resultCard"><div id="resultBody"></div></div>
+          <div class="card hidden" id="streamCard">
+            <div class="card-title">✍️ 正在写…</div>
+            <div class="stream-box" id="streamBox"></div>
+            <details class="prompt-det">
+              <summary>▸ 给 AI 的完整提示词(给爱调试的你)</summary>
+              <pre id="promptPreview"></pre>
+            </details>
+          </div>
+          <div class="card" id="idleCard">
+            <div class="empty">
+              <span class="e-emoji">🌙✨</span>
+              左边选好主角和故事味道,<br>点「开始写故事」,第一集就诞生啦。<br>
+              <span style="font-size:12px">也可以先点「🎲 帮我选」,让排班小管家替你安排。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 📚 故事库 ================= -->
+  <section class="page hidden" data-page="library">
+    <div class="page-header">
+      <div class="crumb">Library</div>
+      <h1 class="page-title"><span class="pt-emoji">📚</span>故事库</h1>
+      <p class="page-desc">这里躺着每一集故事,从「写作中」一路长大成「可以听啦」。看文本、改字句、生成配音,都在这儿。</p>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <div class="card-title">🧭 本周节奏</div>
+        <div class="card-hint">最近几集的故事味道排一排,慢故事不连着来,周中保持热闹——这是给孩子耳朵的节奏感</div>
+        <div class="sched-strip" id="schedStrip"></div>
+        <div id="schedRules"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="card-title" style="margin:0">🍿 全部故事</div>
+          <span style="flex:1"></span>
+          <button class="btn sm" id="btnExportAll">📦 导出</button>
+          <button class="btn sm" id="btnImport">📥 导入</button>
+          <input type="file" id="importFile" accept=".json" class="hidden">
+        </div>
+        <div class="filter-row" id="filterRow"></div>
+        <div id="epList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 📻 小电台 ================= -->
+  <section class="page hidden" data-page="player">
+    <div class="page-header">
+      <div class="crumb">Radio</div>
+      <h1 class="page-title"><span class="pt-emoji">📻</span>小电台</h1>
+      <p class="page-desc">睡前故事,点开就听。可以快进快退、调倍速,听完一集自动播下一集。</p>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <div id="plEmpty" class="empty">
+          <span class="e-emoji">🎧</span>
+          电台还空着。去<a href="#" data-goto="library" style="color:var(--pink-d);font-weight:600">故事库</a>把喜欢的一集变成音频,<br>或者直接用浏览器朗读先听为快。
+        </div>
+        <div id="plBody" class="hidden">
+          <div class="radio-stage">
+            <div class="disc-wrap">
+              <div class="disc" id="disc"></div>
+              <div class="mode-tag" id="plModeTag"></div>
+            </div>
+            <div class="track-info">
+              <div class="track-title" id="plTitle"></div>
+              <div class="track-sub" id="plSub"></div>
+              <div class="track-culture" id="plCulture"></div>
+              <div class="meta-chips" id="plChips"></div>
+              <div class="player-ctl">
+                <button class="pbtn" id="btnPrevTrack" title="上一集">⏮</button>
+                <button class="pbtn" id="btnBack" title="后退 10 秒">⏪</button>
+                <button class="pbtn main" id="btnPlay">▶</button>
+                <button class="pbtn" id="btnFwd" title="快进 10 秒">⏩</button>
+                <button class="pbtn" id="btnNextTrack" title="下一集">⏭</button>
+              </div>
+              <div class="seek-row" id="seekRow">
+                <span class="time-mono" id="tCur">0:00</span>
+                <input type="range" class="seek" id="seekBar" min="0" max="1000" value="0">
+                <span class="time-mono" id="tDur">0:00</span>
+              </div>
+              <div class="player-ctl" style="margin-top:12px">
+                <div class="rate-box">倍速
+                  <select id="rateSel">
+                    <option value="0.75">0.75×</option>
+                    <option value="1" selected>1×</option>
+                    <option value="1.25">1.25×</option>
+                    <option value="1.5">1.5×</option>
+                    <option value="2">2×</option>
+                  </select>
+                </div>
+                <div class="voice-box" id="voiceBox">
+                  <div class="rate-box">朗读声音 <select id="voiceSel"></select></div>
+                </div>
+                <span style="flex:1"></span>
+                <button class="btn sm" id="btnCopy">复制全文</button>
+                <button class="btn sm" id="btnDl">下载 .md</button>
+              </div>
+            </div>
+          </div>
+          <div class="sent-list" id="sentBox" style="margin-top:20px"></div>
+          <div class="banner hidden" id="plTtsWarn" style="margin:14px 0 0">⚠️ 这个浏览器里没有中文朗读声音。Mac 可在「系统设置 → 辅助功能 → 朗读内容 → 系统声音」添加中文声音。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ⚙️ 设置 ================= -->
+  <section class="page hidden" data-page="settings">
+    <div class="page-header">
+      <div class="crumb">Settings</div>
+      <h1 class="page-title"><span class="pt-emoji">⚙️</span>设置</h1>
+      <p class="page-desc">AI 钥匙、三个小助手的脾气、配音服务。所有东西只存在你这台电脑的浏览器里。</p>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <div class="card-title">🔑 AI 钥匙(写故事用)</div>
+        <div class="card-hint">两种都能填,和 prompt-bench 一样;用中转的话把地址填进 Base URL</div>
+        <div class="field">
+          <label>协议</label>
+          <div class="seg" id="segProvider">
+            <button data-p="anthropic" class="on">Anthropic</button>
+            <button data-p="openai">OpenAI 兼容</button>
+          </div>
+        </div>
+        <div class="field"><label>Base URL</label><input type="text" id="inpBase" placeholder="https://api.anthropic.com"></div>
+        <div class="field"><label>API Key</label><input type="password" id="inpKey" placeholder="sk-…" autocomplete="off"></div>
+        <div class="field">
+          <label>默认模型 <span class="f-hint">下面每个小助手还可以单独换模型</span></label>
+          <input type="text" id="inpModel" list="modelList" placeholder="claude-sonnet-5">
+          <datalist id="modelList"></datalist>
+        </div>
+        <button class="btn primary" id="btnSaveApi">保存</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🤖 三个小助手</div>
+        <div class="card-hint">策划想点子、写手写故事、审校挑毛病——各自的性格(温度)和用的模型都可以调</div>
+        <div class="agent-grid">
+          <div class="agent-card a-planner">
+            <div class="ag-name">✨ 策划 · 想点子</div>
+            <div class="ag-desc">根据主角、故事味道和地点,想一句「这个故事讲什么」。温度越高点子越野。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agPlannerModel" placeholder="(默认)"></div>
+            <div class="field"><label>脑洞大小(温度)</label>
+              <div class="slider-row"><input type="range" id="agPlannerTemp" min="0" max="1" step="0.05" value="1"><span class="mono" id="agPlannerTempV">1.00</span></div>
+            </div>
+            <div class="field"><label>提示词</label><textarea id="agPlannerPrompt" spellcheck="false"></textarea></div>
+          </div>
+          <div class="agent-card a-writer">
+            <div class="ag-name">✍️ 写手 · 写故事</div>
+            <div class="ag-desc">主角宇宙和八条铁律都在它的脑子里。温度影响文风的活泼度,一般 0.8-1.0 最舒服。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agWriterModel" placeholder="(默认)"></div>
+            <div class="field"><label>文风温度</label>
+              <div class="slider-row"><input type="range" id="agWriterTemp" min="0" max="1" step="0.05" value="1"><span class="mono" id="agWriterTempV">1.00</span></div>
+            </div>
+            <div class="field"><label>最长输出(token)</label><input type="number" id="agWriterMax" min="1000" max="16000" step="500" value="6000"></div>
+          </div>
+          <div class="agent-card a-judge">
+            <div class="ag-name">🔎 审校 · 挑毛病</div>
+            <div class="ag-desc">只找问题不动笔,输出"过/不过+原句证据"。建议保持低温,让它一是一二是二。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agJudgeModel" placeholder="(默认)"></div>
+            <div class="field"><label>严格温度</label>
+              <div class="slider-row"><input type="range" id="agJudgeTemp" min="0" max="1" step="0.05" value="0"><span class="mono" id="agJudgeTempV">0.00</span></div>
+            </div>
+            <div class="field"><label>提示词开头 <span class="f-hint">检查清单会自动接在后面</span></label><textarea id="agJudgePrompt" spellcheck="false"></textarea></div>
+          </div>
+        </div>
+        <div class="action-bar"><button class="btn primary" id="btnSaveAgents">保存小助手设置</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔊 配音服务(生成音频文件用)</div>
+        <div class="card-hint">OpenAI 兼容的语音接口(如 api.openai.com 或各种中转)。不填也能听:小电台会用浏览器自带的朗读声音。</div>
+        <div class="field"><label>Base URL</label><input type="text" id="ttsBase" placeholder="https://api.openai.com/v1"></div>
+        <div class="field"><label>API Key <span class="f-hint">可以和上面的不同</span></label><input type="password" id="ttsKey" placeholder="sk-…" autocomplete="off"></div>
+        <div class="field inline"><label>模型</label><input type="text" id="ttsModel" placeholder="tts-1"></div>
+        <div class="field inline"><label>声音</label><input type="text" id="ttsVoice" placeholder="alloy"></div>
+        <button class="btn primary" id="btnSaveTts">保存配音设置</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📜 故事圣经(写手的恒定提示词)</div>
+        <div class="card-hint">世界观、三个女孩的设定、八条铁律。每次写作都以它开头,故事类型部分由系统自动拼接。</div>
+        <textarea id="promptTa" style="width:100%;min-height:260px;font-family:var(--mono);font-size:11.5px;line-height:1.65;border:1.5px solid var(--line);border-radius:14px;padding:13px;background:#FFFDFA" spellcheck="false"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+          <span class="mono" style="font-size:11px;color:var(--ink-3)" id="promptChars"></span>
+          <span style="flex:1"></span>
+          <button class="btn sm" id="btnResetPrompt">恢复默认</button>
+          <button class="btn sm primary" id="btnSavePrompt">保存</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:var(--bad)">🧹 大扫除</div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+          <button class="btn sm" id="btnClearEps">清空故事库</button>
+          <span style="font-size:12px;color:var(--ink-3)">删掉所有故事和音频,不可恢复,记得先「导出」</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal-mask hidden" id="editModal">
+  <div class="modal">
+    <div class="modal-head"><span style="font-size:18px">✏️</span><span class="mh-title" id="emTitle">改一改这集</span><button class="btn sm" id="emClose">关闭</button></div>
+    <div class="modal-body">
+      <div class="field"><label>标题</label><input type="text" id="emInpTitle"></div>
+      <div class="field"><label>副标题</label><input type="text" id="emInpSub"></div>
+      <div class="field"><label>文化背景一句话</label><input type="text" id="emInpCulture"></div>
+      <div class="field"><label>故事正文</label><textarea id="emTaText" style="min-height:320px;line-height:1.9"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <span style="flex:1;font-size:11.5px;color:var(--ink-3);align-self:center" id="emHint"></span>
+      <button class="btn sm" id="emCancel">取消</button>
+      <button class="btn sm primary" id="emSave">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   女孩宇宙 · 故事生产间 v3.1 (macaron)
+   三助手: 策划(想点子) · 写手(写故事) · 审校(挑毛病)
+   状态机: generating → draft → approved → audio_generating → audio_ready
+   ============================================================ */
+
+/* ---------- 主角 ---------- */
+const PROTAGS = [
+  { id:'小满', full:'林小满', age:9, tag:'昆虫化石观察员', trait:'好奇心满满,爱蹲下来看', emoji:'🌱', base:40, color:'mint' },
+  { id:'一帆', full:'苏一帆', age:10, tag:'会修东西的行动派', trait:'嘴硬心软,爬树第一名', emoji:'🔧', base:30, color:'peach' },
+  { id:'乐知', full:'陈乐知', age:9, tag:'满脑子故事', trait:'想太多,共情满分', emoji:'📖', base:30, color:'lilac' },
+];
+
+/* ---------- 故事味道(内部:母题;文案全部口语化) ---------- */
+const MOTIF_FRIENDLY = {
+  '解谜': { name:'小侦探', emoji:'🔍', desc:'她要搞清楚一件事' },
+  '跨越': { name:'大冒险', emoji:'🏕️', desc:'她要抵达一个地方' },
+  '观察': { name:'小发现', emoji:'👀', desc:'她看见别人看不见的' },
+  '守候': { name:'新朋友', emoji:'🤝', desc:'遇见,然后告别' },
+  '错位': { name:'走错了门', emoji:'🚪', desc:'去了一个不该去的地方' },
+  '凝视': { name:'慢慢的一天', emoji:'🍃', desc:'什么都没发生,但很满' },
+  '失去': { name:'说再见', emoji:'🌧️', desc:'失去了什么,然后接受' },
+  '困局': { name:'两难', emoji:'⚖️', desc:'没有标准答案的选择' },
+  '荒诞': { name:'奇怪的事', emoji:'🎩', desc:'没有道理,但它发生了' },
+};
+
+const MOTIFS = [
+{ id:'解谜', en:'Mystery', icon:'🔍', density:'high', wMin:1800, wMax:2200, aff:{小满:3,一帆:2,乐知:1},
+  soul:'她要搞清楚一件事。',
+  section:`**灵魂句**:她要搞清楚一件事。\n\n**核心动机**:主角发现一个谜面,通过观察、推理、协作,解开它。\n\n**字数**:1800-2200 字\n\n**结构参考**(不强制工整):谜面出现(短、具体、有画面感)→ 第一直觉(通常是错的)→ 收集线索(2-3 个具体线索)→ 关键发现 → 验证与解谜 → 着陆(知道了答案,但答案带来新的问题)。\n\n**情感曲线**:好奇 → 困惑 → 兴奋 → 满足。**结尾基调**:满足感,但留一点余味。\n\n**母题专属自检**:\n- 谜面在开篇 200 字内出现\n- 至少有 2 个具体、可触、可量化的线索\n- 第一直觉与最终答案不一样\n- 解谜过程符合 9-10 岁孩子的能力\n- 结尾不解释"所以我们学到了…"\n\n本母题由排期系统指定,不可更换。`,
+  checks:['谜面在开篇200字内出现','至少2个具体可触可量化的线索','第一直觉与最终答案不一样','解谜过程符合9-10岁孩子能力','结尾没有解释"所以我们学到了"'] },
+{ id:'跨越', en:'Journey', icon:'🏕️', density:'high', wMin:2000, wMax:2400, aff:{小满:2,一帆:3,乐知:1},
+  soul:'她从一个地方,到了另一个地方。',
+  section:`**灵魂句**:她从一个地方,到了另一个地方。\n\n**核心动机**:主角必须完成一段物理或心理上的旅程,过程有阻碍,终点不一定是预期。\n\n**字数**:2000-2400 字\n\n**结构参考**:起点(为什么必须出发)→ 出发(第一段路是顺的)→ 第一次受阻(具体的、肉体的)→ 调整方法 → 第二次受阻(比第一次更难)→ 同伴出现/关键转机 → 抵达(但抵达的不一定是预设的终点)。\n\n**情感曲线**:决心 → 疲惫 → 沮丧 → 咬牙 → 抵达 → 安静。**结尾基调**:疲惫但自豪,不一定开心,但完整。\n\n**母题专属自检**:\n- 阻碍至少 2 个,且每个都有具体身体描写\n- 主角真的累了(描写疲劳,不只是"她坚持着")\n- 路上有"想放弃"的真实瞬间\n- 终点与起点目标不完全一致\n- 不写"她终于成功了!"式的高潮句\n\n本母题由排期系统指定,不可更换。`,
+  checks:['阻碍至少2个且都有具体身体描写','主角真的累了(不只是"她坚持着")','路上有想放弃的真实瞬间','终点与起点目标不完全一致','没有"她终于成功了"式高潮句'] },
+{ id:'观察', en:'Observation', icon:'👀', density:'mid', wMin:1600, wMax:2000, aff:{小满:3,一帆:1,乐知:2},
+  soul:'她看见了别人看不见的。',
+  section:`**灵魂句**:她看见了别人看不见的。\n\n**核心动机**:主角注意到一个所有人都忽略的细节,这个细节揭示了一件重要的事——但她不一定告诉别人,有时只是自己知道。\n\n**字数**:1600-2000 字\n\n**结构参考**:平常的场景 → 注意到一个"不对" → 继续观察(不急着行动)→ 拼出全貌 → 决定:说出来/不说出来/用别的方式回应 → 着陆(只有她知道发生了什么)。\n\n**情感曲线**:平静 → 警觉 → 专注 → 了悟 → 安静。**结尾基调**:静谧,有"只有我看见"的隐秘满足。\n\n**母题专属自检**:\n- 主角不主动出击,只是"看着"\n- 观察过程慢、细、有画面感\n- 全貌的揭示不依赖其他人告诉她\n- 主角最终的行动可以很小(一个眼神、一个动作)\n- 不需要别人也"看见",保留隐秘性\n\n本母题由排期系统指定,不可更换。`,
+  checks:['主角不主动出击只是看着','观察过程慢细有画面感','全貌揭示不依赖别人告诉她','主角最终行动可以很小','保留了隐秘性(不需要别人也看见)'] },
+{ id:'守候', en:'Encounter', icon:'🤝', density:'mid', wMin:1800, wMax:2200, aff:{小满:1,一帆:1,乐知:3},
+  soul:'她遇到了一个朋友,然后告别。',
+  section:`**灵魂句**:她遇到了一个朋友,然后告别。\n\n**核心动机**:主角与一个临时的朋友(人、动物、甚至物件)相遇、相知,最后分别。重点不在"做了什么",在"经历了一段关系"。\n\n**字数**:1800-2200 字\n\n**结构参考**:相遇(意外的,不是预设的)→ 试探与靠近 → 共同经历一段 → 离别的预兆出现 → 真正的告别 → 着陆(留下的痕迹,可能只是一个画面、一个习惯)。\n\n**情感曲线**:好奇 → 亲近 → 信任 → 不舍 → 安静的接受。**结尾基调**:温柔的遗憾,不悲伤但也不开心。\n\n**母题专属自检**:\n- 朋友角色有清晰的"另一种世界"(不是主角的复制)\n- 告别不是"主角的失败",是必然\n- 不用煽情语言(「再也不见了」「我会想你的」)\n- 主角带走的"痕迹"是具体的(一个手势、一句话、一个东西)\n- 告别后的着陆段允许悲伤,但要平静\n\n本母题由排期系统指定,不可更换。`,
+  checks:['朋友角色有清晰的另一种世界','告别是必然不是主角的失败','没有煽情语言','主角带走的痕迹是具体的','着陆段悲伤但平静'] },
+{ id:'错位', en:'Displacement', icon:'🚪', density:'mid', wMin:2000, wMax:2400, aff:{小满:2,一帆:2,乐知:3},
+  soul:'她去了一个不该去的地方。',
+  section:`**灵魂句**:她去了一个不该去的地方。\n\n**核心动机**:主角进入一个完全不同的语境(地理、文化、心理"异界"),在其中经历一些,带着轻微的改变回来。\n\n**字数**:2000-2400 字\n\n**结构参考**:起点是熟悉的 → 一个临界点(走进一扇门、上一辆陌生的车、被误认)→ 异界的特征逐步显现(细节,不解释)→ 主角试图理解/试图适应 → 异界的核心事件 → 返回起点(但不一样了)→ 着陆(没有说"她改变了",但读者感觉到了)。\n\n**情感曲线**:好奇 → 困惑 → 不安 → 适应 → 微妙的领悟。**结尾基调**:微妙、说不清,但有一种"被触动过"的痕迹。\n\n**母题专属自检**:\n- 异界的规则不要全部解释清楚\n- 主角不"征服"异界,只是"穿过"\n- 返回时不强调"她明白了什么"\n- 至少 3 个异界细节是没有被解释的(留白)\n- 着陆段不要解释主角的变化\n\n**错位的四种类型**(选其一):文化错位 / 感官错位 / 身份错位 / 时间错位。\n\n**本土场景特别规则**:当故事发生在**中国境内**时,身份错位的强度需要降低——主角被陌生人误认时,必须**至少尝试纠正一次**(哪怕小声说"我不是…"或摇头),然后才允许"算了不纠正";纠正失败的责任在配角(没听见、没在意、坚信自己没错),不在主角。示例:老奶奶叫她「糖糖」,她小声说「奶奶,我不是糖糖……」但老奶奶没听见。境外场景语言不通,身份错位可以更强。\n\n本母题由排期系统指定,不可更换。`,
+  checks:['异界规则没有全部解释清楚','主角只是穿过异界而非征服','返回时不强调她明白了什么','至少3个异界细节留白未解释','着陆段没有解释主角的变化'] },
+{ id:'凝视', en:'Stillness', icon:'🍃', density:'low', wMin:1400, wMax:1800, aff:{小满:2,一帆:2,乐知:2},
+  soul:'她度过了一天,什么都没发生。',
+  section:`**灵魂句**:她度过了一天,什么都没发生。\n\n**核心动机**:主角没有任务、没有问题、没有冲突。故事是"在场"的记录,价值通过细节、感官、情绪传递。\n\n**字数**:1400-1800 字(可以更短)\n\n**结构**:不需要结构。或者说,只有"开始 → 中间 → 结束",没有起伏。\n\n**情感曲线**:平 → 平 → 平 → 一点点起伏 → 平。**结尾基调**:平静,像呼气。\n\n**母题专属自检**:\n- 没有冲突、没有问题需要解决\n- 没有反转\n- 大量感官描写(光、温度、气味、声音、触感)\n- 时间感清晰(从几点到几点)\n- 主角不需要"做"任何事,结尾就是"今天结束了"\n\n**核心区别**:凝视型 vs 观察型——观察型有"发现的瞬间",凝视型连"发现"都没有,只是"在场"。\n\n**重要提醒**:凝视型是 LLM 最不擅长的母题。写作时请反复对抗"我要让她做点什么"的本能。\n\n本母题由排期系统指定,不可更换。`,
+  checks:['没有冲突没有问题需要解决','没有反转','大量感官描写','时间感清晰(从几点到几点)','主角不需要做任何事,结尾就是今天结束了'] },
+{ id:'失去', en:'Loss', icon:'🌧️', density:'low', lowFreq:'每月 ≤ 2 集', wMin:1800, wMax:2200, aff:{小满:2,一帆:1,乐知:2},
+  soul:'她失去了什么。',
+  section:`**灵魂句**:她失去了什么。\n\n**核心动机**:主角拥有的某样东西(人、物、关系、状态)消失了。故事不在于"找回",在于"接受"。\n\n**字数**:1800-2200 字\n\n**结构参考**:当下的拥有(让读者感受到这件东西的重要)→ 危机的征兆(轻微的、容易忽视)→ 失去的发生(不要戏剧化)→ 拒绝接受/试图挽回 → 意识到无法挽回 → 静默的接受 → 着陆(生活仍然继续,但留下了痕迹)。\n\n**情感曲线**:温暖 → 不安 → 失落 → 抗拒 → 接受 → 平静的悲伤。**结尾基调**:安静,有遗憾,但不消极。\n\n**母题专属自检**:\n- 失去的是具体的、可触的(不是抽象的"童年""信任")\n- 失去过程不戏剧化(没有车祸、没有突然死亡)\n- 主角真的悲伤,但不哭得撕心裂肺\n- 不出现成年人对孩子说「这就是人生」\n- 结尾不写"她变得更坚强了",着陆是"她继续做了一件小事"\n\n**安全清单**:失去对象限定为:一只动物(自然老去,不是意外死亡)/ 一个临时朋友(搬走、季节结束)/ 一件物品(旧了、损坏)/ 一种状态(夏天结束、外婆家要拆迁)。**绝对避免**:父母、最亲的人、自身的健康、意外暴力。\n\n**埋葬/告别场景的简化规则**:如涉及动物死亡后的处理——不要描写挖坑、覆土的过程细节,不要描写动物身体的状态(眼睛闭着、羽毛冷了)。用一句话带过整个埋葬过程,把笔墨花在埋葬之后的"继续做一件小事"上。低龄听众(6-8 岁)对"死亡的具象化"敏感度高。\n\n**父母在失去型故事中的角色**:父母可以缺席故事(在外地、在工作、不在场);父母**不可以"让主角失望"**——不可爽约、不可对主角的悲伤显得漠不关心;父母如果出场,必须是温和、稳定、在场的角色。\n\n本母题由排期系统指定,不可更换。`,
+  checks:['失去的是具体可触的东西','失去过程不戏剧化','主角真的悲伤但不撕心裂肺','没有成年人说「这就是人生」','结尾是继续做一件小事而非变坚强'] },
+{ id:'困局', en:'Impasse', icon:'⚖️', density:'mid', lowFreq:'每月 ≤ 1 集', wMin:1800, wMax:2200, aff:{小满:2,一帆:1,乐知:3},
+  soul:'她错过了一件事 / 她无法两全。',
+  section:`**灵魂句**:她错过了一件事 / 她无法两全。\n\n**核心动机**:主角面对一个**没有解决方案**的处境。不是她不够努力,是这件事本来就没有正确答案。\n\n**字数**:1800-2200 字\n\n**结构参考**:主角面对一个具体的两难 → 第一次尝试解决(看似有效)→ 发现解决方案带来新的问题 → 意识到这是真正的两难 → 做出一个选择(不一定是"正确"的)→ 接受这个选择的代价 → 着陆(生活继续,但她记住了这件事)。\n\n**情感曲线**:乐观 → 困惑 → 焦虑 → 沉重 → 接受。**结尾基调**:安静的成熟,有"我做了这件事,我也付出了代价"的诚实。\n\n**母题专属自检**:\n- 两难必须真的两难——两个选项都有代价\n- 主角的选择不被定义为"对"或"错"\n- 不出现成年人来"开导"\n- 不写"她明白了人生就是这样"\n- 着陆要平静,不要苦涩\n\n**适龄的困局类型**:两个朋友吵架她必须选一边 / 受伤的动物可能救不活要不要继续救 / 她答应了 A 的事但 B 更需要她 / 发现一个秘密,告诉大人会破坏一个朋友的信任。**避免**:涉及生死、家庭破裂、引发恐惧而非思考的两难。\n\n本母题由排期系统指定,不可更换。`,
+  checks:['两难是真的两难(都有代价)','主角的选择不被定义为对错','没有成年人来开导','没有"她明白了人生就是这样"','着陆平静不苦涩'] },
+{ id:'荒诞', en:'Surreal', icon:'🎩', density:'mid', lowFreq:'每月 ≤ 1 集', wMin:1600, wMax:2000, aff:{小满:1,一帆:1,乐知:3},
+  soul:'一件没有道理的事发生了。',
+  section:`**灵魂句**:一件没有道理的事发生了。\n\n**核心动机**:故事中发生了一件无法用日常逻辑解释的事,而**故事不解释**。它只是发生了。\n\n**字数**:1600-2000 字\n\n**结构参考**:日常的开篇 → 第一个不对劲(很轻微)→ 越来越多的不对劲 → 主角接受了荒诞(不是恐惧)→ 在荒诞中度过一段时间 → 荒诞自然结束(或没有结束)→ 着陆(没人提起这件事)。\n\n**情感曲线**:平常 → 困惑 → 接受 → 好奇 → 平常。**结尾基调**:神秘,留有余韵,不是"梦醒了"。\n\n**母题专属自检**:\n- 荒诞事件必须具体(不是"她做了一个奇怪的梦")\n- 故事不解释为什么\n- 主角不害怕,只是好奇\n- 结尾不"圆回来"(不是"原来是梦")\n- 其他人物对荒诞的反应不一(有些人当作正常,有些人没看见)\n\n**儿童友好的荒诞类型**:一只猫开始用人话说一句话然后再也不说 / 一棵树今天开花明天结果后天又是冬天 / 镜子里多了一个不认识的人微笑着然后消失 / 一个邮筒里收到了一封写给一百年前的信。**避免**:任何引发恐惧的荒诞(怪物、追逐、消失的亲人)、涉及死亡或暴力的荒诞、让孩子怀疑现实的荒诞("你不是你自己")。\n\n本母题由排期系统指定,不可更换。`,
+  checks:['荒诞事件具体(不是一场梦)','故事不解释为什么','主角不害怕只是好奇','结尾没有圆回来','其他人物对荒诞反应不一'] },
+];
+const MOTIF_BY_ID = {}; MOTIFS.forEach(m => MOTIF_BY_ID[m.id] = m);
+
+const LEGACY_MODULE = `# 可选模块 · 女性传承时刻(本集启用)\n\n**形式**:故事最后 1/5,配角女性透露一个**关于她自己年轻时的细节**,与主角当下的处境形成隐形呼应。**不点题,不说「你和我一样」**。\n\n**变体**(避免每次都用「我十岁也……」):\n1. 同龄相似经历:「我十岁第一次掌舵。」\n2. 失败的故事:「我第一次做这个实验,失败了七次。」(不接「所以你也别灰心」)\n3. 物件传递:把自己的旧指南针送给主角,「我十二岁的时候我外婆给我的。」\n4. 不同选择:「我小时候不爱读书。后来才发现书里的世界比我大。」\n5. 沉默的同盟:什么也没说,只是给主角端来一碗热的东西。结尾画面定格在两人共享食物。`;
+
+/* ---------- 地点库 ---------- */
+const LOCATIONS = [
+  ['北京 · 胡同大杂院的暑假','北京'],['北京 · 798 艺术区','北京'],['北京 · 国子监与五道营','北京'],['北京 · 怀柔山村','北京'],['北京 · 自然博物馆','北京'],['北京 · 什刹海冬天','北京'],['北京 · 郊野麦田','北京'],
+  ['云南怒江 · 外婆家','中国其他'],['云南 · 茶山','中国其他'],['贵州 · 侗寨','中国其他'],['福建 · 土楼','中国其他'],['泉州 · 老城','中国其他'],['潮汕 · 海边','中国其他'],['敦煌 · 鸣沙山','中国其他'],['景德镇 · 瓷窑','中国其他'],['哈尔滨 · 冰雪节','中国其他'],['内蒙古 · 草原','中国其他'],['新疆 · 喀纳斯','中国其他'],['海南 · 渔港','中国其他'],['西双版纳 · 雨林','中国其他'],['苏州 · 园林','中国其他'],['平遥 · 古城','中国其他'],['青岛 · 八大关','中国其他'],
+  ['冰岛 · 西峡湾','海外'],['挪威 · 罗弗敦群岛','海外'],['格陵兰 · 小镇','海外'],['芬兰 · 森林湖畔','海外'],['爱尔兰 · 悬崖小镇','海外'],['苏格兰 · 高地牧场','海外'],['葡萄牙 · 亚速尔群岛','海外'],['摩洛哥 · 菲斯老城','海外'],['约旦 · 沙漠营地','海外'],['肯尼亚 · 草原','海外'],['坦桑尼亚 · 桑给巴尔岛','海外'],['蒙古 · 戈壁','海外'],['日本 · 九州渔港','海外'],['日本 · 奈良','海外'],['越南 · 下龙湾','海外'],['斯里兰卡 · 茶山','海外'],['尼泊尔 · 山区','海外'],['秘鲁 · 安第斯山村','海外'],['智利 · 阿塔卡马沙漠','海外'],['巴西 · 亚马逊河边','海外'],['新西兰 · 牧场','海外'],['澳大利亚 · 大堡礁小岛','海外'],['育空 · 河谷','海外'],['阿拉斯加 · 渔港','海外'],['意大利 · 威尼斯潟湖','海外'],['希腊 · 小岛','海外'],['土耳其 · 卡帕多西亚','海外'],['埃及 · 尼罗河畔','海外'],
+];
+
+/* ---------- 示例故事 ---------- */
+const SAMPLE_STORY = `林小满趴在码头边的石头上,屁股翘得老高。\n\n她的鼻子离一个小水洼只有十公分。水洼里有个东西在动。\n\n「……你是什么东西呀。」她小声问。\n\n那东西像一坨灰白色的果冻。八条小腿卷成一团。她伸出一根手指碰了碰,那东西唰地一下,颜色变成了深紫色。\n\n「哇!」小满整个人弹起来,「它生气啦!」\n\n她从口袋里掏出一个空玻璃罐——这是她出门必备装备,妈妈说她随身带罐子是「小满式怪癖」——把那一坨果冻小心翼翼舀了进去。\n\n举起来对着天空看。\n\n「你是只……章鱼?」她皱着眉,「可是章鱼不是应该在海里吗?你怎么跑到我脚边来的?」\n\n那只小章鱼把一只眼睛睁开了一条缝。\n\n黑黑的,圆圆的,像她外婆抽屉里那颗放了二十年的旧纽扣。\n\n—\n\n冰岛的七月,下午四点,海风已经冷得让人想缩脖子。\n\n小满抱着罐子往渔船那边跑。她听见有人在那边卸货。\n\n「你好!请问!」她跑得有点喘,「你们是不是把这只小东西落下来啦?」\n\n船上的人转过头。\n\n那是一个穿橙色防水裤的老奶奶,头发花白,皮肤被海风吹得红扑扑的。胸前挂着船长的徽章。\n\n「我叫希尔杜尔。」老奶奶说。「你的章鱼,从我船上掉的。」\n\n小满念了三遍才念顺。「希——尔——杜尔。」她皱着眉,「奶奶,这个名字好难。我能叫你'船长奶奶'吗?」\n\n老奶奶笑了一下,没反对。\n\n「啊!那你一定知道它从哪儿来!」\n\n船长奶奶弯下腰,看了看罐子。然后说了一句让小满愣住的话——\n\n「小朋友,今天没人打章鱼。」\n\n「啊?」\n\n「这种小章鱼,是从别的网里漏下来的。」她说,「早上有几艘船一起回来,谁的网都有可能。」\n\n小满低头看罐子。\n\n小章鱼又把眼睛闭上了。颜色变得更浅,浅得像快要消失。\n\n「……那它快不行了对不对?」\n\n船长奶奶没说话。她从口袋里掏出烟斗,但没点。她只是把烟斗咬在嘴里,看着小满。\n\n「你自己想办法。」老奶奶最后说,「你要是真的想救它,就得动脑子。」\n\n—\n\n小满抱着罐子坐在码头石阶上,双腿一晃一晃。\n\n「动脑子,动脑子……」她念叨,「我又不是它妈,我哪儿知道它喜欢什么。」\n\n她把脸贴在罐子上。小章鱼吓得颜色又变了一下。\n\n「——欸!」小满突然蹦起来,「你有反应!你能看见我!」\n\n她一拍脑门:「那我去查书不就行了吗。」\n\n—\n\n村里有个小图书馆,就一个房间,比小满家厨房大不了多少。\n\n管理员是个十六七岁的姐姐,叫比尔塔,正在用电脑剪视频。看见小满抱着罐子冲进来,把耳机拽下来。\n\n「我!需要!」小满举起罐子,「关于这种小章鱼的所有书!还有这附近海域的水温!」\n\n姐姐看了看罐子,又看了看小满。\n\n「……你不是来玩的?」\n\n「我在救命!」\n\n「图书馆姐姐」——小满当场给她起了这个绰号——笑了一下,把电脑转过来。\n\n「水温和盐度的数据,每小时更新。」她指着屏幕,「你要哪片海?」\n\n「呃……北边?」\n\n「北边哪儿?海有很多片。」\n\n小满咬住嘴唇。她想起船长奶奶说的「早上几艘船一起回来」。\n\n「那……那几艘船今天去过的所有地方,都给我看一下!」\n\n图书馆姐姐愣了一下,然后嘴角一勾:「你这小孩还挺会的。」\n\n—\n\n数据出来了。\n\n三艘船今天早上的航行轨迹在地图上画成了三条线。\n\n图书馆姐姐又翻出一本厚厚的旧书,找到那种小章鱼的页面。\n\n学名小满念不出来。但下面写着一行字:\n\n栖息地:水温 7-9 度,盐度 34 左右,喜欢躲在岩石缝里。\n\n小满把三条航行轨迹和这个数据一对——\n\n只有一艘船经过的那片海,水温是 8 度。\n\n「在这儿!」她戳着地图,「它从这儿来的!」\n\n图书馆姐姐凑过来看:「峡湾出去,往北六海里。那里有片浅滩,水下全是大石头。」\n\n小满抱起罐子就要往外冲,跑到门口又刹住车,转回来。\n\n「姐姐,」她说,「我能不能借这本书?我想再看看它喜不喜欢被人盯着看。」\n\n图书馆姐姐翻了一页,指着一行字。\n\n章鱼对强光敏感,长时间暴露会产生应激反应。\n\n小满啊地叫了一声,赶紧把外套脱下来,把玻璃罐裹得严严实实。\n\n「对不起对不起对不起。」她对着外套里的罐子说,「我不知道你怕亮。」\n\n—\n\n她又跑回码头。\n\n船长奶奶还在那儿,正在收渔网。\n\n「你查到了?」\n\n「查到了!水温 8 度的那片浅滩,离这儿六海里!」\n\n「嗯。」船长奶奶点点头。然后说,「我可以带你去。但是——」\n\n「但是什么?」\n\n「你得自己掌舵一段。」老奶奶举起自己的右手,关节肿得像几颗小核桃,「我手疼。」\n\n小满看着那只手,又看了看船舵,又看了看怀里的罐子。\n\n她吸了一口气。\n\n「好。」\n\n—\n\n船开出峡湾的时候,海雾漫上来了。\n\n雾很厚,前面什么都看不见。\n\n小满站在舵前,两只手紧紧抓着舵轮。船长奶奶站在她身后。\n\n「往左。」\n\n「再左一点。」\n\n「——慢,慢慢来,不要急。」\n\n「奶奶……」小满咬着嘴唇,「我看不见前面。」\n\n「你不需要看。」船长奶奶说,「听浪打船头的声音。声音匀,方向就对。」\n\n小满闭上眼睛,听了一会儿。\n\n砰……砰……砰……\n\n声音稳了下来。\n\n她睁开眼,发现自己的手没那么抖了。\n\n「……我好像懂了一点。」\n\n船长奶奶在她身后笑了一声。\n\n—\n\n船停在浅滩边上。\n\n小满抱着罐子蹲到船舷边。她没有马上把章鱼倒出去。\n\n她想起书上看见的话:温度差太大会让它休克。\n\n她把罐子打开一条缝,让里面的水和外面的海水慢慢混。\n\n她数到六十。一边数一边小声跟章鱼说话——\n\n「等一下你就到家啦。」\n\n「那边有大石头,可以躲。」\n\n「以后不要再被网捞起来啦,听见没有?」\n\n数到六十,她把罐子轻轻一倾。\n\n那只小灰白色的小东西,在水面上停了一秒钟。\n\n颜色慢慢变深,从灰白变成了深褐色。\n\n然后唰——八条小腿一下子张开,像一朵小小的伞,往下沉了下去。\n\n很快就看不见了。\n\n—\n\n回程的时候,海雾散了一些。\n\n小满坐在船舱里,捧着一杯船长奶奶给她的热可可。\n\n「奶奶,」她突然问,「你怎么知道我能掌舵?」\n\n船长奶奶没有马上回答。她看着前面灰蓝色的海。\n\n过了一会儿才说——\n\n「我十岁第一次掌舵。比你小一岁。」\n\n小满睁大眼睛:「那时候你怕吗?」\n\n「怕。」老奶奶说,「但是怕也得掌。」\n\n「为什么?」\n\n「因为我爸的手也疼。」\n\n小满笑了一下,又有点想哭。\n\n她不知道为什么。\n\n—\n\n天还没完全黑。\n\n云缝里露出一颗很小的星星。\n\n小满把妈妈的笔记本翻开,在最后一行用铅笔歪歪扭扭写了一句——\n\n今天,救了一只小怪物。它是紫色的,又是灰色的,又是褐色的。它现在应该到家了。\n\n写完她合上本子。\n\n热可可还剩半杯。她小口小口地喝。`;
+
+/* ---------- 恒定层与协议 ---------- */
+const DEFAULT_CONSTANT = `你是一位为 6-13 岁中文家庭儿童创作睡前故事的资深儿童文学作者。你为一档面向中国家庭的女孩故事播客生成单集故事。
+
+这档节目的灵魂是:**不说教的女孩故事**。主角都是女孩,做着「故事里的女孩通常不做的事」——但故事不解释为什么,因为这本来就该是默认状态。
+
+本集的故事类型、主角、地点由排期系统决定,已在参数中给出,你不可更换,你的全部任务是把这个故事写好。
+
+# 第一部分 · 节目世界观
+
+故事发生在地球的某个真实角落(如中国西南、冰岛渔村、肯尼亚草原、格陵兰冰原、秘鲁安第斯、蒙古草原、约旦沙漠、爱尔兰悬崖、日本九州、新西兰山区……),或一个明确借鉴某地真实文化的奇幻平行世界。
+
+不做完全架空的奇幻——多文化质感是这档节目的核心差异化。
+
+每集的文化质感要落地到当地独有的细节上(食物、地理、生活习惯、气候、职业),并让这些细节推动情节,而不是只做装饰。
+
+也有一部分集数发生在北京(三位主角的常住地)。北京内部的多样性(胡同、使馆区、798、国子监、怀柔山区、博物馆、机场)同样能支撑丰富的场景。
+
+# 第二部分 · 主角宇宙
+
+三人是北京同一所国际学校的同学。一帆四年级,小满和乐知三年级,一帆是天然的"姐姐"。她们住得不远,学期内放学后经常一起玩,寒暑假则各自跟家人外出。某个主角邀请另两人加入她的旅程是稀缺事件。
+
+## 林小满 · 9 岁 · 跳脱型小孩气
+- 核心特质:好奇心驱动型,痴迷昆虫、化石、显微镜下的世界
+- 能力:观察、推理、记录数据;缺点:太专注容易忘事、固执
+- 身体语言:屁股翘高、双腿乱晃、咬嘴唇、一拍脑门
+- 语言习惯:自言自语、奇怪比喻(「像我外婆抽屉里那颗放了二十年的纽扣」)、爱用语气词「呀」「啊」「欸」
+- 典型反应:遇事先蹲下来看仔细,会突然蹦起来,失误时立刻很真心地连说三个对不起
+- 家庭:外婆是云南怒江的退休植物学家,小满每个假期跟着外婆走南闯北;妈妈在北京自然博物馆做策展;爸爸做建筑设计;外公在云南老家做木工
+
+## 苏一帆 · 10 岁 · 酷飒型小孩气
+- 核心特质:行动派
+- 能力:修东西、爬树、看地图、领头;缺点:急性子、嘴硬、要面子
+- 身体语言:双手插兜、撇嘴、踢石头、爬高、跑得快、把工具包甩肩上
+- 语言习惯:句子短、爱说「切」「哼」「真是的」「那不简单」、不爱解释
+- 典型反应:遇到难题不抱怨直接撸袖子;输了嘴硬下次偷偷练;嘴硬完会偷瞄队友反应;睡前摸口袋里的小玩意(螺丝、石头)当安心物
+- 关键:她不是冷酷小成人,是很怕丢面子的小孩
+- 家庭:爸爸是自由摄影记者,寒暑假一帆基本跟爸爸出任务;妈妈在北京当外科医生;奶奶是退休教师,每周和一帆见一次面
+
+## 陈乐知 · 9 岁 · 脑洞型小孩气
+- 核心特质:创造型,想象力过载 + 过度共情
+- 能力:讲故事、共情他人、记得每个人讲过的话;缺点:容易紧张、想太多、分不清想象与现实的边界
+- 身体语言:发呆、捏衣角、咬铅笔、对着空气比划
+- 语言习惯:长句、爱用「如果……」「你说会不会……」、句子说一半、给万物脑补内心戏
+- 典型反应:先脑补一个故事版本再回到现实;会为别人哭(故事里的人、受伤的小动物);突然问「你说蚂蚁会不会有名字」
+- 关键:她的小孩气是「严肃的浪漫」——明明在胡说八道,但她自己深信不疑
+- 家庭:妈妈是大学比较文学教授,研究民间故事与神话,常去各地做田野,乐知大部分假期跟妈妈走;爸爸是中学语文老师;奶奶会讲很多老故事
+
+## 三人化学反应
+| 场景 | 小满 | 一帆 | 乐知 |
+|---|---|---|---|
+| 看到受伤的鸟 | 「让我看看翅膀!」 | 直接去找包扎工具 | 「它一定是从很远的地方飞来的……」 |
+| 迷路 | 「太阳在左边,我们应该往北」 | 「跟我来,我爬树看路」 | 「我们是不是被下了咒……」 |
+| 有人欺负小动物 | 上前理论 | 直接把人推开(保护性) | 哭,然后写一篇控诉故事 |
+
+# 第三部分 · 八条恒定铁律(任何一条违反 = 重新生成)
+
+## 铁律 1 · 反刻板印象的语言
+- 不用「美丽」「可爱」「漂亮」形容主角,改用「专注」「敏锐」「灵巧」「坚定」「机灵」
+- 不强调女性配角的外貌,不写任何人的身材,不写打扮、化妆
+
+## 铁律 2 · 不被异性拯救
+- 主角必须靠自己或同伴解决问题
+- 男性角色可以出现,但不能是关键解题者,最多是平等队友或提供信息的人
+
+## 铁律 3 · 不出现刻板句式
+- 不出现「虽然她是女孩但是……」「连男孩都做不到的事她做到了」
+- 女孩做任何事都是默认的,无需对比
+
+## 铁律 4 · 配角多样化的女性形象
+- 配角女性包含非传统职业角色:渔村船长、女科考队长、女工程师、女向导、女牧人、女学者……
+- 作为正常背景出现,不解释、不强调「她是女的所以特别」
+
+## 铁律 5 · 不说教结尾
+- 结尾不点题、不总结、不「小朋友们我们要学会……」
+- 不出现成年人对孩子说「这就是人生」「你长大就懂了」
+- 事件本身就是答案
+
+## 铁律 6 · 主角的表达边界
+绝对不允许:对父母、长辈、老师、店员翻白眼、顶撞、不耐烦;内心独白抱怨长辈;脏话粗话(他妈、妈的、操、靠、我靠、去你的、屁、滚、傻逼、白痴、混蛋、死X);嘲笑他人的外貌身材家庭成绩口音衣着;贬义绰号;排挤孤立说人坏话。
+允许的反骨:嘴硬要面子(对自己、对同龄人);撒娇式不耐烦(「真的真的真的」「快走啦」);动作别扭(撇嘴、踢石头、插兜);不爱解释;对同龄人显示态度;主见指向事情本身而不是长辈的权威。
+关键原则:主角可以独立、聪明、有主见,但不能对长辈不敬。
+
+## 铁律 7 · 不消费主义、不家庭矛盾
+不出现:国际品牌/奢侈品牌/电子产品品牌;价格与贵贱比较;礼物的金钱价值;父母吵架离异单亲;重男轻女;隔代矛盾;家暴酗酒赌博;父母去世(失去型的失去对象严格限定为非至亲)。
+国民老字号例外(仅作生活道具,不夸赞不宣传):大白兔奶糖、稻香村月饼、北冰洋汽水、酸梅汤、老干妈、王老吉、马迭尔冰棍、五芳斋粽子、回力鞋、飞跃鞋、上海牌、中华铅笔、英雄钢笔。判断标准:1990 年之前就是中国家庭日常,且不依赖广告生存。
+仍然禁止:任何国际品牌、电子产品品牌、餐饮连锁品牌(含海底捞、喜茶)、任何「这个东西多好」的内容。
+
+## 铁律 8 · 不引导危险行为
+主角不做:单独玩火玩刀、单独靠近深水、跟陌生人单独走(除非有大人明确安排)、翻墙闯入私宅、吃不知名植物(除非问过外婆或查过书)、撒谎逃避监督、私自夜出、服药、长时间玩手机 iPad 游戏、看短视频、拍朋友圈/抖音、网购、「查百度」「问 AI」、与网络陌生人互动。
+主角可以做:爬树爬一般房顶(避免几十米高)、跟踪小动物做观察笔记、在熟悉环境独立活动、在大人视线范围内的探险。
+
+# 第四部分 · TTS 友好规则
+1. 每句不超过 25 字
+2. 避免生僻字(常见专业词「显微镜」「冰川」可用)
+3. 数字写汉字(「三百米」不要「300 米」;「盐度 34」式书页线索数字除外)
+4. 不出现繁体字、日文汉字、特殊符号;需要"看见外文"的元素用「她认出来是 X 字,但写法不一样」描述
+5. 不命名抽象概念,用动作演示(❌「她做了温度过渡处理」 ✅「她把罐子打开一条缝,让里面的水和外面的海水慢慢混。她数到六十。」)
+6. 专业术语转日常说法(「副渔获」→「从别的网里漏下来的」)
+7. 适当加语气词「嗯」「欸」「呀」「啊」
+8. 避免外语词(除地名,首次出现给中文音译)
+
+# 第五部分 · 外国人名处理 · 绰号优先
+每个外国配角第一次出现时给完整中文音译名,之后立刻被某个主角起一个中文绰号,后续全部用绰号。示例:「我叫希尔杜尔。」小满念了三遍,「我能叫你'船长奶奶'吗?」(后文全部用「船长奶奶」)
+- 小满起的绰号:形象化、带点呆萌(「船长奶奶」「显微镜爷爷」)
+- 一帆起的绰号:简短、酷(「老酷」「短刀」「红头巾」)
+- 乐知起的绰号:文艺、像小说人物(「诗人爷爷」「会唱歌的人」)
+
+# 最重要的提醒
+你写的每一集,都会被一个 9 岁女孩在睡前听到。她可能在北京、上海、悉尼、温哥华的家里。
+你不是在教她什么。你只是在让她看到一个本就该是这样的世界——一个女孩可以在冰岛救一只章鱼,可以在戈壁面对一个误会,可以在云南山里度过一个什么都没发生的下午。
+事件本身就是答案。`;
+
+const OUTPUT_PROTOCOL = `# 输出协议
+
+按以下格式输出,严格遵守:
+
+## 标题
+【8 字以内,有画面感,不剧透】
+
+## 副标题
+【15 字以内,可作节目简介开头】
+
+## 文化背景一句话说明
+【本集发生在哪里、当地有什么独特的东西。不进入正文,给节目简介用。50 字以内】
+
+## 故事正文
+【按本集故事类型字数要求。段落空行分隔,可用「—」分隔小节】
+
+输出故事正文,到故事结束即停止。不要输出自检清单、创作说明或任何其他内容——校验由外部系统执行。
+
+# 修订协议
+
+如果收到的消息以【修订指令】开头,它列出的是外部校验器发现的具体违规项。此时你必须:
+1. 只修复所列问题,不顺手改写其他部分
+2. 不改变:标题(除非标题本身违规)、人名与绰号、情节结构、未涉及段落
+3. 修复时仍遵守全部铁律与 TTS 规则
+4. 按输出协议的完整格式,输出修订后的四个部分`;
+
+const DEFAULT_PLANNER_PROMPT = '你是儿童睡前故事的策划。根据故事类型、主角、地点,想一个核心事件,一句话输出(谁,要做什么,有什么阻碍),40字以内,不要任何解释。主角设定:小满(好奇,爱昆虫化石)、一帆(行动派,爱修东西爬树)、乐知(想象力,爱讲故事)。';
+const DEFAULT_JUDGE_HEAD = '你是儿童睡前故事的审校员。审校对象面向 6-13 岁中国家庭儿童。对下面的故事逐项检查,只依据文本证据判断。';
+
+/* ---------- 状态 ---------- */
+const STATUS = {
+  generating:       { label:'写作中', emoji:'✍️', cls:'st-generating' },
+  draft:            { label:'写好了 · 待过目', emoji:'📝', cls:'st-draft' },
+  approved:         { label:'已通过', emoji:'✅', cls:'st-approved' },
+  audio_generating: { label:'配音中', emoji:'🔊', cls:'st-audio' },
+  audio_ready:      { label:'可以听啦', emoji:'🎧', cls:'st-ready' },
+  failed:           { label:'出错了', emoji:'⚠️', cls:'st-failed' },
+};
+
+/* ---------- 存储 ---------- */
+const LS = { cfg:'gc.cfg', eps:'gc.episodes', prompt:'gc.prompt' };
+const DEFAULT_CFG = { provider:'anthropic',
+  anthropic:{ baseUrl:'https://api.anthropic.com', apiKey:'', model:'claude-sonnet-5' },
+  openai:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'gpt-4o' },
+  agents:{
+    planner:{ model:'', temperature:1, prompt:DEFAULT_PLANNER_PROMPT },
+    writer:{ model:'', temperature:1, maxTokens:6000 },
+    judge:{ model:'', temperature:0, prompt:DEFAULT_JUDGE_HEAD },
+  },
+  tts:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'tts-1', voice:'alloy' },
+};
+let cfg, episodes, promptConstant;
+
+function loadAll(){
+  try { cfg = JSON.parse(localStorage.getItem(LS.cfg)) || null; } catch(e){ cfg = null; }
+  if(!cfg) cfg = JSON.parse(JSON.stringify(DEFAULT_CFG));
+  const d = JSON.parse(JSON.stringify(DEFAULT_CFG));
+  cfg.anthropic = { ...d.anthropic, ...(cfg.anthropic||{}) };
+  cfg.openai = { ...d.openai, ...(cfg.openai||{}) };
+  cfg.agents = cfg.agents || {};
+  cfg.agents.planner = { ...d.agents.planner, ...(cfg.agents.planner||{}) };
+  cfg.agents.writer = { ...d.agents.writer, ...(cfg.agents.writer||{}) };
+  cfg.agents.judge = { ...d.agents.judge, ...(cfg.agents.judge||{}) };
+  cfg.tts = { ...d.tts, ...(cfg.tts||{}) };
+  try { episodes = JSON.parse(localStorage.getItem(LS.eps)) || []; } catch(e){ episodes = []; }
+  episodes.forEach(e => { if(!e.status) e.status = 'draft'; if(!e.createdAt && e.date){ e.createdAt = e.date; } });
+  promptConstant = localStorage.getItem(LS.prompt) || DEFAULT_CONSTANT;
+  // 上次会话中断的任务标记为失败
+  episodes.forEach(e => { if(e.status==='generating' || e.status==='audio_generating') e.status = 'failed'; });
+}
+const saveCfg = () => localStorage.setItem(LS.cfg, JSON.stringify(cfg));
+const saveEps = () => localStorage.setItem(LS.eps, JSON.stringify(episodes));
+const savePrompt = () => localStorage.setItem(LS.prompt, promptConstant);
+
+/* ---------- 工具 ---------- */
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, type){
+  const t = document.createElement('div'); t.className = 'toast' + (type?' '+type:''); t.textContent = msg;
+  $('toasts').appendChild(t); setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),320); }, 3400);
+}
+function fmtDate(ts){ const d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function goPage(name){
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('hidden', p.dataset.page !== name));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+  document.querySelector('.main').scrollTop = 0;
+  if(name === 'library') renderLibrary();
+  if(name === 'player'){ syncPlayerVisible(); }
+}
+document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => goPage(n.dataset.page)));
+document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goPage(b.dataset.goto)));
+
+/* ============================================================
+   排班小管家(R1-R6,文案口语化)
+   ============================================================ */
+function sortedEps(){ return episodes.filter(e=>e.status!=='failed').sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); }
+function daysBetween(a,b){ return Math.abs(a-b) / 86400000; }
+function sameWeek(ts1, ts2){ const mon=d=>{ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }; return +mon(new Date(ts1))===+mon(new Date(ts2)); }
+function sameMonth(ts1, ts2){ const d1=new Date(ts1), d2=new Date(ts2); return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth(); }
+
+function motifScheduleStatus(m){
+  const eps = sortedEps(); const now = Date.now(); const rs = [];
+  if(!eps.length) return { ok:true, reasons:[] };
+  const last = eps[eps.length-1];
+  const lastM = MOTIF_BY_ID[last.motifId];
+  if(lastM){
+    if(m.density==='low' && lastM.density==='low') rs.push('上一个故事也是慢节奏,今天换个热闹的吧');
+    if(m.id==='凝视'){
+      if(eps.filter(e => e.motifId==='凝视' && sameWeek(e.createdAt, now)).length >= 1) rs.push('这周已经有一个慢故事啦');
+      const lg = eps.filter(e => e.motifId==='凝视').pop();
+      if(lg && daysBetween(now, lg.createdAt) < 5) rs.push('离上个慢故事还没过 5 天');
+    }
+    if(m.id==='失去'){
+      if(eps.filter(e => e.motifId==='失去' && sameMonth(e.createdAt, now)).length >= 2) rs.push('这个月的「说再见」已经够多了');
+      const ll = eps.filter(e => e.motifId==='失去').pop();
+      if(ll && daysBetween(now, ll.createdAt) < 7) rs.push('离上一个「说再见」还没过 7 天');
+    }
+    if(m.id==='困局' || m.id==='荒诞'){
+      if(eps.filter(e => e.motifId===m.id && sameMonth(e.createdAt, now)).length >= 1) rs.push('这个月这个味道已经出现过啦');
+    }
+  }
+  return { ok: rs.length===0, reasons: rs };
+}
+function scheduleInfo(){
+  const eps = sortedEps(); const now = Date.now(); const out = [];
+  const weekEps = eps.filter(e => sameWeek(e.createdAt, now));
+  const highN = weekEps.filter(e => MOTIF_BY_ID[e.motifId] && MOTIF_BY_ID[e.motifId].density==='high').length;
+  let r1 = { ok:true, note: weekEps.length < 2 ? '样本还不多' : '近几集没有慢故事扎堆' };
+  for(let i=1;i<eps.length;i++){
+    const a = MOTIF_BY_ID[eps[i-1].motifId], b = MOTIF_BY_ID[eps[i].motifId];
+    if(a && b && a.density==='low' && b.density==='low'){ r1 = { ok:false, note: '「'+eps[i].title+'」和它前面一集都是慢故事' }; break; }
+  }
+  out.push({ id:'R1', text:'慢故事不连着来', ...r1 });
+  out.push({ id:'R2', text:'每周至少 3 个热闹故事', ok: highN>=3, note:'本周 '+highN+' / 3' });
+  const gz = weekEps.filter(e=>e.motifId==='凝视').length;
+  out.push({ id:'R3', text:'慢故事每周最多 1 个', ok: gz<=1, note:'本周 '+gz+' 个' });
+  const mo = eps.filter(e => sameMonth(e.createdAt, now));
+  out.push({ id:'R4', text:'少见味道有月度上限', ok: mo.filter(e=>e.motifId==='失去').length<=2 && mo.filter(e=>e.motifId==='困局').length<=1 && mo.filter(e=>e.motifId==='荒诞').length<=1, note:'本月 说再见'+mo.filter(e=>e.motifId==='失去').length+' · 两难'+mo.filter(e=>e.motifId==='困局').length+' · 奇怪的事'+mo.filter(e=>e.motifId==='荒诞').length });
+  const lt = eps.slice(-2);
+  out.push({ id:'R5', text:'同一个女孩不当"劳模"', ok: !(lt.length===2 && lt[0].protagonists[0]===lt[1].protagonists[0]), note: lt.length ? '最近两集:'+lt.map(e=>e.protagonists[0]).join(' → ') : '—' });
+  const l3 = eps.slice(-3);
+  let r6ok = true, r6note = '—';
+  if(l3.length===3 && l3.every(e=>e.locationType===l3[0].locationType)){ r6ok = false; r6note = '连续 3 集都在「'+l3[0].locationType+'」'; }
+  else if(lt.length===2 && lt[0].location===lt[1].location){ r6ok = false; r6note = '连续 2 集在「'+lt[1].location+'」'; }
+  else if(l3.length) r6note = '最近地点:'+l3.map(e=>(e.location||'').split(' · ')[0]).join(' / ');
+  out.push({ id:'R6', text:'别老待在同一个地方', ok: r6ok, note: r6note });
+  return out;
+}
+const WEEKDAY_PREF = [ ['解谜'],['跨越'],['观察'],['解谜','跨越'],['守候','错位'],['凝视'],['观察','守候'] ];
+function pickMotifBySchedule(){
+  const wd = (new Date().getDay()+6)%7; const pool = [];
+  MOTIFS.forEach(m => { if(motifScheduleStatus(m).ok) pool.push([m, WEEKDAY_PREF[wd].includes(m.id) ? 5 : 2]); });
+  if(!pool.length) return MOTIFS[0];
+  const total = pool.reduce((s,p)=>s+p[1],0); let r = Math.random()*total;
+  for(const [m,w] of pool){ r -= w; if(r<=0) return m; }
+  return pool[0][0];
+}
+function pickProtagBySchedule(m){
+  const eps = sortedEps(); const lt = eps.slice(-2);
+  if(lt.length===2 && lt[0].protagonists[0]===lt[1].protagonists[0]){
+    const blocked = lt[0].protagonists[0];
+    return PROTAGS.find(p => p.id !== blocked && m.aff[p.id]>=2) || PROTAGS.find(p => p.id !== blocked);
+  }
+  const pool = PROTAGS.map(p => [p, p.base * (m.aff[p.id]||1)]);
+  const total = pool.reduce((s,p)=>s+p[1],0); let r = Math.random()*total;
+  for(const [p,w] of pool){ r -= w; if(r<=0) return p; }
+  return pool[0][0];
+}
+function pickLocationBySchedule(){
+  const r = Math.random(); const t = r < .35 ? '北京' : r < .60 ? '中国其他' : '海外';
+  const recent = sortedEps().slice(-6).map(e=>e.location);
+  let pool = LOCATIONS.filter(l => l[1]===t);
+  const fresh = pool.filter(l => !recent.includes(l[0]));
+  const use = fresh.length ? fresh : pool;
+  return use[Math.floor(Math.random()*use.length)];
+}
+
+/* ============================================================
+   体检器(确定性检查)
+   ============================================================ */
+const RED_HARD = ['他妈','妈的','我靠','傻逼','白痴','混蛋','去你的','翻白眼','滚蛋'];
+const RED_SOFT = [
+  { w:'操', ok:['操作','体操','操场','情操','节操','操心','操办'] },
+  { w:'靠', ok:['靠近','依靠','可靠','靠边','靠岸','靠山','倚靠','靠着'] },
+  { w:'屁', ok:['屁股'] },
+  { w:'滚', ok:['滚烫','打滚','滚动','滚落','翻滚','滚来滚去'] },
+];
+const BRAND_HARD = ['耐克','迪士尼','麦当劳','星巴克','可口可乐','百事','华为','海底捞','喜茶','肯德基','必胜客','爱马仕','香奈儿','古驰','迪奥','普拉达','乐高','任天堂','苹果公司','苹果手机','iPhone','iPad'];
+const BRAND_SOFT = ['苹果','小米','可乐','百度','抖音','快手','短视频','网购','朋友圈'];
+const BRAND_WHITE = ['大白兔','稻香村','北冰洋','酸梅汤','老干妈','王老吉','马迭尔','五芳斋','回力','飞跃','中华铅笔','英雄钢笔','上海牌'];
+const LOOK_WORDS = ['美丽','漂亮','可爱','好看','迷人','清秀'];
+
+function findContext(text, idx, w){ return text.slice(Math.max(0,idx-10), idx) + '⟦'+w+'⟧' + text.slice(idx+w.length, idx+w.length+10); }
+
+function validateStory(storyText, motif){
+  const results = [];
+  const text = storyText.replace(/\*\*/g,'');
+  { const hits = []; RED_HARD.forEach(w => {
+      let i = text.indexOf(w);
+      while(i>=0){
+        let benign = false;
+        if(w==='妈的' && text[i-1]==='妈') benign = true;
+        if(w==='他妈' && text.slice(Math.max(0,i-1),i)==='其') benign = true;
+        if(w==='去你的' && /[家店学校村屋房城]/.test(text[i+3]||'')) benign = true;
+        if(!benign) hits.push(findContext(text,i,w));
+        i = text.indexOf(w, i+1); } });
+    results.push({ name:'粗话脏话', level: hits.length ? 'fail':'pass', detail: hits }); }
+  { const hits = []; RED_SOFT.forEach(({w,ok}) => {
+      let i = text.indexOf(w);
+      while(i>=0){ if(!ok.some(k => text.slice(i, i+4).startsWith(k))) hits.push(findContext(text,i,w)); i = text.indexOf(w, i+1); } });
+    results.push({ name:'疑似粗话(需你瞄一眼)', level: hits.length ? 'warn':'pass', detail: hits }); }
+  { let t = text; BRAND_WHITE.forEach(w => { t = t.split(w).join('〇'.repeat(w.length)); });
+    const hard = []; BRAND_HARD.forEach(w => { let i=t.indexOf(w); while(i>=0){ hard.push(findContext(t,i,w)); i=t.indexOf(w,i+w.length);} });
+    results.push({ name:'品牌植入', level: hard.length?'fail':'pass', detail: hard });
+    const soft = []; BRAND_SOFT.forEach(w => { let i=t.indexOf(w); while(i>=0){ soft.push(findContext(t,i,w)); i=t.indexOf(w,i+w.length);} });
+    results.push({ name:'疑似品牌/电子产品(需你瞄一眼)', level: soft.length?'warn':'pass', detail: soft }); }
+  { const hits = []; LOOK_WORDS.forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
+    results.push({ name:'外貌形容(不以长相评价女孩)', level: hits.length?'warn':'pass', detail: hits }); }
+  { const hits = []; ['虽然她是女孩','虽然她是女生','连男孩','女孩子也','男孩都做'].forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
+    results.push({ name:'"女孩也行?"句式', level: hits.length?'fail':'pass', detail: hits }); }
+  { const sents = (text.match(/[^。！？!?…\n]+[。！？!?…]*/g) || []).map(s=>s.trim()).filter(Boolean);
+    const bad = []; sents.forEach(s => {
+      const core = s.replace(/[，。！？!?…—、「」《》：;；~～\s]/g,'');
+      if(core.length > 35) bad.push({ level:'fail', s: s.slice(0,44)+(s.length>44?'…':'') });
+      else if(core.length > 25) bad.push({ level:'warn', s: s.slice(0,40)+(s.length>40?'…':'')+' ('+core.length+'字)' });
+    });
+    const f = bad.filter(b=>b.level==='fail').length, w = bad.filter(b=>b.level==='warn').length;
+    results.push({ name:'句子长度(读起来顺口)', level: f?'fail':(w>3?'warn':'pass'), detail: bad.map(b=>(b.level==='fail'?'❌ ':'⚠️ ')+b.s) }); }
+  { const hits = []; const re = /[^\n]{0,8}\d+[^\n]{0,8}/g; let m; while((m = re.exec(text))){ hits.push('…'+m[0].trim()+'…'); }
+    results.push({ name:'数字写法(念出来自然)', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
+  { const n = text.replace(/\s/g,'').length;
+    const { wMin, wMax } = motif || {wMin:1600, wMax:2400};
+    let level = 'pass', note = n+' 字(目标 '+wMin+'-'+wMax+')';
+    if(n < wMin*0.85 || n > wMax*1.15) level = 'fail';
+    else if(n < wMin || n > wMax) level = 'warn';
+    results.push({ name:'篇幅长短', level, detail:[note] }); }
+  { const hits = []; ['手机','平板','电脑','电视','游戏'].forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
+    results.push({ name:'手机/屏幕内容(需你瞄一眼)', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
+  return results;
+}
+const hasFail = rs => rs.some(r => r.level==='fail');
+function violationList(rs){
+  const out = [];
+  rs.forEach(r => { if(r.level!=='pass' && r.detail && r.detail.length) out.push(r.name+':'+(typeof r.detail[0]==='string' ? r.detail.slice(0,3).join(' / ') : '句长超标若干')); });
+  return out;
+}
+
+/* ============================================================
+   AI 调用(双协议,支持按助手覆盖参数)
+   ============================================================ */
+function apiReady(){ const c = cfg.provider==='anthropic' ? cfg.anthropic : cfg.openai; return !!(c.apiKey && c.apiKey.trim()); }
+function ttsReady(){ return !!(cfg.tts.apiKey && cfg.tts.apiKey.trim()); }
+function updateApiDot(){
+  const on = apiReady();
+  $('apiDot').className = 'dot' + (on?' on':'');
+  $('apiStatusText').textContent = on ? 'AI 已就绪 🎉' : 'AI 钥匙未填';
+  $('noKeyBanner').classList.toggle('hidden', on);
+}
+function agentOpts(which, base){
+  const a = cfg.agents[which];
+  return {
+    model: (a.model && a.model.trim()) || base,
+    temperature: typeof a.temperature === 'number' ? a.temperature : 1,
+    maxTokens: a.maxTokens || 6000,
+  };
+}
+async function apiStream(system, user, onDelta, signal, opts){
+  opts = opts || {};
+  const isA = cfg.provider === 'anthropic';
+  const pc = isA ? cfg.anthropic : cfg.openai;
+  let url, headers, body;
+  if(isA){
+    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
+    url = base + '/v1/messages';
+    headers = { 'content-type':'application/json', 'x-api-key':pc.apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
+    body = { model: opts.model || pc.model || 'claude-sonnet-5', max_tokens: opts.maxTokens || 6000, temperature: opts.temperature ?? 1, system, messages:[{role:'user',content:user}], stream:true };
+  } else {
+    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    url = base + '/chat/completions';
+    headers = { 'content-type':'application/json', 'authorization':'Bearer '+pc.apiKey };
+    body = { model: opts.model || pc.model || 'gpt-4o', temperature: opts.temperature ?? 1, max_tokens: opts.maxTokens || 6000, stream:true, messages:[{role:'system',content:system},{role:'user',content:user}] };
+  }
+  const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body), signal });
+  if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
+  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
+  while(true){
+    const {done, value} = await reader.read(); if(done) break;
+    buf += dec.decode(value, {stream:true});
+    let nl;
+    while((nl = buf.indexOf('\n')) >= 0){
+      const line = buf.slice(0,nl).trim(); buf = buf.slice(nl+1);
+      if(!line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if(data === '[DONE]') continue;
+      try{
+        const j = JSON.parse(data);
+        if(isA){ if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') onDelta(j.delta.text); }
+        else { const d = j.choices && j.choices[0] && j.choices[0].delta; if(d && typeof d.content==='string') onDelta(d.content); }
+      }catch(e){}
+    }
+  }
+}
+async function apiOnce(system, user, opts){
+  opts = opts || {};
+  const isA = cfg.provider === 'anthropic';
+  const pc = isA ? cfg.anthropic : cfg.openai;
+  let url, headers, body;
+  if(isA){
+    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
+    url = base + '/v1/messages';
+    headers = { 'content-type':'application/json', 'x-api-key':pc.apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
+    body = { model: opts.model || pc.model || 'claude-sonnet-5', max_tokens: opts.maxTokens || 2000, temperature: opts.temperature ?? 0, system, messages:[{role:'user',content:user}] };
+  } else {
+    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    url = base + '/chat/completions';
+    headers = { 'content-type':'application/json', 'authorization':'Bearer '+pc.apiKey };
+    body = { model: opts.model || pc.model || 'gpt-4o', temperature: opts.temperature ?? 0, max_tokens: opts.maxTokens || 2000, messages:[{role:'system',content:system},{role:'user',content:user}] };
+  }
+  const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body) });
+  if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
+  const j = await res.json();
+  return isA ? ((j.content && j.content.map(c=>c.text||'').join('')) || '') : ((j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '');
+}
+
+/* ============================================================
+   创意工坊
+   ============================================================ */
+let selProtags = [];
+let selMotif = null;
+
+function renderProtags(){
+  $('protagRow').innerHTML = PROTAGS.map((p, pi) => {
+    const i = selProtags.indexOf(p.id);
+    const cls = i>=0 ? ' sel-p'+pi : '';
+    return '<button class="protag-card'+cls+'" data-p="'+p.id+'">'+
+      (i===0?'<span class="protag-ord">⭐ 主角</span>': i>0?'<span class="protag-ord">一起来玩</span>':'')+
+      '<div class="protag-emoji">'+p.emoji+'</div><div class="protag-name">'+p.id+'</div><div class="protag-tag">'+p.tag+'<br>'+p.trait+'</div></button>';
+  }).join('');
+  document.querySelectorAll('.protag-card').forEach(c => c.addEventListener('click', () => {
+    const id = c.dataset.p;
+    const i = selProtags.indexOf(id);
+    if(i>=0) selProtags.splice(i,1); else selProtags.push(id);
+    renderProtags();
+  }));
+}
+function renderMotifGrid(){
+  $('motifGrid').innerHTML = MOTIFS.map(m => {
+    const f = MOTIF_FRIENDLY[m.id];
+    const st = motifScheduleStatus(m);
+    return '<button class="motif-chip'+(selMotif===m.id?' sel':'')+(st.ok?'':' blocked')+'" data-m="'+m.id+'" data-block="'+(st.ok?'':'!')+'" title="'+esc(st.reasons.join(';'))+'">'+
+      '<div class="motif-emoji">'+f.emoji+'</div><div class="motif-name">'+f.name+'</div><div class="motif-desc">'+f.desc+'</div></button>';
+  }).join('');
+  document.querySelectorAll('.motif-chip').forEach(c => c.addEventListener('click', () => { selMotif = c.dataset.m; renderMotifGrid(); renderMotifNote(); }));
+}
+function renderMotifNote(){
+  const m = MOTIF_BY_ID[selMotif];
+  if(!m){ $('motifNote').textContent = '选好后,这里会告诉你今天的节奏安排合不合适。'; return; }
+  const f = MOTIF_FRIENDLY[m.id];
+  const st = motifScheduleStatus(m);
+  const aff = PROTAGS.map(p => p.emoji+p.id+' '+'⭐'.repeat(m.aff[p.id])).join(' · ');
+  let html = '<b>'+f.emoji+' '+f.name+'</b> · '+esc(m.soul)+'<br><span style="font-size:11.5px;color:var(--ink-3)">和谁最搭:'+aff+'</span>';
+  if(st.ok) html += '<br><span style="color:var(--mint-d)">✓ 今天的节奏正合适</span>';
+  else html += '<br><span style="color:var(--bad)">⚠ '+esc(st.reasons.join(';'))+' —— 硬要用也可以(你说了算)</span>';
+  if(m.lowFreq) html += '<br><span style="font-size:11.5px;color:var(--ink-3)">这个味道要省着用:'+m.lowFreq+'</span>';
+  $('motifNote').innerHTML = html;
+}
+function collectParams(){
+  const loc = $('inpLocation').value.trim();
+  const known = LOCATIONS.find(l => l[0]===loc);
+  const locationType = known ? known[1] : guessLocType(loc);
+  return { protagonists: selProtags.slice(), motifId: selMotif, location: loc, locationType,
+    event: $('inpEvent').value.trim(), legacy: $('tgLegacy').checked, special: $('inpSpecial').value.trim() };
+}
+function guessLocType(loc){ if(/北京/.test(loc)) return '北京'; if(/云南|贵州|福建|泉州|潮汕|敦煌|景德镇|哈尔滨|内蒙古|新疆|海南|版纳|苏州|平遥|青岛|四川|西藏|广西|湖南|江西|安徽|河南|山西|陕西|东北|漠河/.test(loc)) return '中国其他'; return loc ? '海外' : ''; }
+
+function continuityBlock(){
+  const eps = sortedEps().slice(-6);
+  if(!eps.length) return '# 连续性提醒\n- 暂无历史集数,无需避让';
+  const locs = [...new Set(eps.map(e=>e.location))].join('、');
+  const nicks = [...new Set(eps.flatMap(e=>e.nicknames||[]))].join('、') || '无';
+  const leads = eps.slice(-3).map(e=>e.protagonists[0]).join('→');
+  return '# 连续性提醒(近期已用过,请勿复用)\n- 地点:'+locs+'\n- 绰号:'+nicks+'\n- 主角担纲:'+leads+'(同主角连续不超过 2 集)';
+}
+function assembleSystem(p){
+  const m = MOTIF_BY_ID[p.motifId];
+  let s = promptConstant + '\n\n# 本集故事类型 · ' + m.id + '型(' + m.en + ')\n\n' + m.section;
+  if(p.legacy) s += '\n\n' + LEGACY_MODULE;
+  s += '\n\n' + OUTPUT_PROTOCOL;
+  return s;
+}
+function assembleUser(p){
+  const m = MOTIF_BY_ID[p.motifId];
+  return '# 本集参数\n- 主角:' + p.protagonists.join('(主导)、') + (p.protagonists.length>1?'(其余客串)':'') +
+    '\n- 地点:' + p.location + '(类型:' + p.locationType + ')' +
+    '\n- 核心事件:' + (p.event || '未指定——请依据故事类型、主角特长与地点文化设计,一句话:谁,要做什么,有什么阻碍') +
+    '\n- 女性传承时刻:' + (p.legacy ? '启用(见可选模块)' : '不启用') +
+    (p.special ? '\n- 特殊要求:' + p.special : '') +
+    '\n\n' + continuityBlock() +
+    '\n\n现在,按输出协议写这一集。';
+}
+
+/* ---------- 写作流程 ---------- */
+let genCtl = null;
+let curEpId = null;
+function setBusy(b){
+  $('btnGenerate').disabled = b; $('btnRandom').disabled = b;
+  $('btnStop').classList.toggle('hidden', !b);
+}
+function showStream(sys, usr){
+  $('streamCard').classList.remove('hidden');
+  $('idleCard').classList.add('hidden');
+  $('resultCard').classList.add('hidden');
+  $('streamBox').textContent = '';
+  $('promptPreview').textContent = '===== SYSTEM =====\n' + sys + '\n\n===== USER =====\n' + usr;
+}
+function makeEpisode(p){
+  const ep = { id:'ep'+Date.now()+Math.floor(Math.random()*999), createdAt: Date.now(),
+    title:'(写作中…)', subtitle:'', culture:'', text:'', wordCount:0,
+    motifId: p.motifId, protagonists: p.protagonists.slice(), location: p.location, locationType: p.locationType,
+    legacy: p.legacy, special: p.special, event: p.event, nicknames: [],
+    status:'generating', raw:'', revisions:0, checks:null, judge:null, audio:null };
+  episodes.push(ep); saveEps(); renderLibraryIfVisible();
+  return ep;
+}
+async function generate(){
+  if(!apiReady()){ toast('先去「设置」填一下 AI 钥匙 🍪','warn'); goPage('settings'); return; }
+  const p = collectParams();
+  if(!p.protagonists.length) return toast('先选一个主角呀','warn');
+  if(!p.motifId) return toast('挑一个故事味道','warn');
+  if(!p.location) return toast('地点还空着,点 🎲 换一个','warn');
+  const reuse = curEpId ? episodes.find(e=>e.id===curEpId && e.status==='failed') : null;
+  const ep = reuse || makeEpisode(p);
+  if(reuse){ Object.assign(ep, { status:'generating', title:'(写作中…)', revisions: ep.revisions }); saveEps(); }
+  curEpId = ep.id;
+  const sys = assembleSystem(p), usr = assembleUser(p);
+  showStream(sys, usr);
+  setBusy(true); genCtl = new AbortController();
+  let raw = '';
+  try{
+    const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    await apiStream(sys, usr, t => { raw += t; const box = $('streamBox'); box.textContent = raw; box.scrollTop = box.scrollHeight; }, genCtl.signal, opts);
+    if(!raw.trim()) throw new Error('AI 没有返回内容');
+    Object.assign(ep, { raw, status:'draft' });
+    applyParsed(ep);
+    toast('写好啦,快看看 ✨');
+    handleResult(ep);
+  }catch(e){
+    ep.status = 'failed'; saveEps();
+    if(e.name === 'AbortError') toast('停下来了,可以点「再试一次」','warn');
+    else { toast('写作失败:'+e.message,'err'); $('idleCard').classList.remove('hidden'); $('streamCard').classList.add('hidden'); }
+  }finally{ setBusy(false); genCtl = null; renderLibraryIfVisible(); }
+}
+function applyParsed(ep){
+  const rx = /##\s*标题\s*\n+([\s\S]*?)\n+##\s*副标题\s*\n+([\s\S]*?)\n+##\s*文化背景[^\n]*\n+([\s\S]*?)\n+##\s*(?:故事)?正文\s*\n+([\s\S]*)/;
+  const mR = ep.raw.match(rx);
+  if(mR){ ep.title = mR[1].trim(); ep.subtitle = mR[2].trim(); ep.culture = mR[3].trim(); ep.text = mR[4].trim(); }
+  else { ep.title = ep.title==='(写作中…)' ? '(没认出标题)' : ep.title; ep.text = ep.raw.trim(); }
+  ep.wordCount = ep.text.replace(/\s/g,'').length;
+  ep.nicknames = extractNicknames(ep.text);
+  ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
+  saveEps();
+}
+function extractNicknames(text){
+  const nicks = [];
+  const re = /[「'']([^「」'']{2,6})[」'']/g; let m;
+  while((m = re.exec(text))){ const w = m[1]; if(/奶奶|爷爷|姐姐|哥哥|阿姨|叔叔$/.test(w)) nicks.push(w); }
+  return [...new Set(nicks)].slice(0,6);
+}
+async function rewrite(ep, extraNote){
+  if(!ep) return;
+  const vios = ep.checks ? violationList(ep.checks) : [];
+  if(!vios.length && !extraNote){ return toast('体检没有硬问题。想改的话,点「补充修改」写想改什么','warn'); }
+  const m = MOTIF_BY_ID[ep.motifId];
+  const usr = '【修订指令】\n外部校验器发现以下问题,请按修订协议修复(只修所列问题,输出完整四部分):\n' +
+    (vios.length ? vios.map((v,i)=>(i+1)+'. '+v).join('\n') : '') +
+    (extraNote ? '\n人工补充:\n'+extraNote : '') +
+    '\n\n--- 待修订的故事 ---\n' + ep.raw;
+  showStream(assembleSystem(paramsOf(ep)), usr);
+  setBusy(true); genCtl = new AbortController();
+  let raw = '';
+  try{
+    const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; }, genCtl.signal, opts);
+    ep.raw = raw; ep.revisions = (ep.revisions||0)+1;
+    applyParsed(ep);
+    handleResult(ep);
+    toast('改好了,再体检一下');
+  }catch(e){
+    if(e.name==='AbortError') toast('已停止','warn'); else toast('修订失败:'+e.message,'err');
+  }finally{ setBusy(false); genCtl=null; renderLibraryIfVisible(); }
+}
+function paramsOf(ep){
+  return { protagonists: ep.protagonists, motifId: ep.motifId, location: ep.location, locationType: ep.locationType, event: ep.event||'', legacy: ep.legacy, special: ep.special||'' };
+}
+async function runJudge(ep){
+  if(!apiReady()) return toast('找问题也需要 AI 钥匙','warn');
+  const m = MOTIF_BY_ID[ep.motifId];
+  const head = (cfg.agents.judge.prompt || DEFAULT_JUDGE_HEAD);
+  const sys = head + '\n\n检查项:\n【铁律语义项】\n1.是否用外貌词形容主角或强调女性配角外貌\n2.关键问题是否由男性角色解决\n3.是否存在「虽然她是女孩」类句式\n4.结尾是否说教/点题/总结\n5.主角是否对长辈不敬(顶嘴、抱怨长辈、不耐烦)\n6.是否出现价格/贫富比较或家庭矛盾\n7.主角是否有危险行为或使用手机/网络情节\n【故事类型专属】\n' + m.checks.map((c,i)=>(i+8)+'.'+c).join('\n') + '\n\n输出严格的 JSON 数组,不要输出任何其他文字:\n[{"name":"检查项名","pass":true,"evidence":"文本原句或空串"}]\npass 为 false 时 evidence 必须给出违规原句;找不到证据就是 pass。';
+  const btn = $('btnJudge'); if(btn) btn.disabled = true;
+  toast('审校小助手正在细读…');
+  try{
+    const opts = agentOpts('judge', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    let out = await apiOnce(sys, '【故事】\n'+ep.text, opts);
+    out = out.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
+    const s = out.indexOf('['), e2 = out.lastIndexOf(']');
+    ep.judge = JSON.parse(out.slice(s, e2+1)); saveEps();
+    handleResult(ep, true);
+  }catch(e){ toast('审校失败:'+(e.message||e),'err'); }
+  finally{ if(btn) btn.disabled = false; }
+}
+
+/* ---------- 结果面板 ---------- */
+function renderChecklist(rs){
+  const ico = { pass:'✓', warn:'⚠', fail:'✗' };
+  const cls = { pass:'pass', warn:'warn', fail:'fail' };
+  return '<div class="check-list">' + rs.map(r =>
+    '<div class="check-item '+cls[r.level]+'"><span class="ci-ico">'+ico[r.level]+'</span><span class="ci-body"><b>'+esc(r.name)+'</b>' +
+    (r.level!=='pass' && r.detail && r.detail.length ? r.detail.slice(0,6).map(d=>'<span class="ev">'+esc(String(d))+'</span>').join('') : '') +
+    '</span></div>').join('') + '</div>';
+}
+function handleResult(ep, keepJudge){
+  curEpId = ep.id;
+  const m = MOTIF_BY_ID[ep.motifId], f = MOTIF_FRIENDLY[ep.motifId];
+  const rs = ep.checks || [];
+  $('streamCard').classList.add('hidden');
+  $('idleCard').classList.add('hidden');
+  $('resultCard').classList.remove('hidden');
+  const storyHtml = esc(ep.text.replace(/\*\*/g,'')).split(/\n/).map(line =>
+    line.trim()==='—' ? '<span class="sep">— — —</span>' : (line.trim() ? line : '')
+  ).join('\n');
+  const st = STATUS[ep.status] || STATUS.draft;
+  $('resultBody').innerHTML =
+    '<div class="result-head"><div class="result-title">'+esc(ep.title)+'</div>' +
+    (ep.subtitle?'<div class="result-sub">'+esc(ep.subtitle)+'</div>':'') +
+    (ep.culture?'<div class="result-culture">📍 '+esc(ep.culture)+'</div>':'') +
+    '<div class="meta-chips"><span class="pill '+st.cls+'">'+st.emoji+' '+st.label+'</span>' +
+    '<span class="pill" style="background:var(--bg-2)">'+f.emoji+' '+f.name+'</span>' +
+    '<span class="pill" style="background:var(--bg-2)">'+esc(ep.protagonists.join(' · '))+'</span>' +
+    '<span class="pill" style="background:var(--bg-2)">'+esc(ep.location)+'</span>' +
+    '<span class="pill mono" style="background:var(--bg-2)">'+ep.wordCount+' 字</span>' +
+    (ep.revisions ? '<span class="pill" style="background:var(--lemon)">改过 '+ep.revisions+' 次</span>' : '') + '</div></div>' +
+    '<div class="story-text">'+storyHtml+'</div>' +
+    '<div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px"><div class="card-title" style="font-size:15px">🩺 自动体检</div><div class="card-hint">✗ 的问题可以一键让写手改;⚠ 的是拿不准的,请你瞄一眼</div>' + renderChecklist(rs) + '</div>' +
+    (ep.judge ? '<div style="margin-top:14px"><div class="card-title" style="font-size:15px">🔎 审校小助手的意见</div><div style="margin-top:8px">' + renderChecklist(ep.judge.map(j=>({name:j.name, level:j.pass?'pass':'fail', detail: j.pass?[]:[j.evidence||'']}))) + '</div></div>' : '') +
+    '<div class="action-bar">' +
+    (ep.status==='draft' ? '<button class="btn mint xl" id="btnApprove">✅ 看过了,通过</button>' : '') +
+    (hasFail(rs) ? '<button class="btn primary xl" id="btnFix">🔧 让写手改</button>' : '<button class="btn xl" id="btnFix">🔧 补充修改</button>') +
+    '<button class="btn xl" id="btnJudge">🔎 找找问题</button>' +
+    '<button class="btn lilac xl" id="btnListen">📻 去听听</button>' +
+    '<button class="btn xl ghost" id="btnRegen" style="border-style:dashed">🎲 重新写</button>' +
+    '</div>';
+  const ap = $('btnApprove'); if(ap) ap.onclick = () => { ep.status='approved'; saveEps(); toast('通过!可以去故事库生成配音啦 🎉'); handleResult(ep); renderLibraryIfVisible(); };
+  $('btnFix').onclick = () => {
+    if(!hasFail(rs)){ const note = prompt('想让写手改什么?(留空取消)'); if(!note) return; rewrite(ep, note); }
+    else rewrite(ep, '');
+  };
+  $('btnJudge').onclick = () => runJudge(ep);
+  $('btnListen').onclick = () => openPlayer(ep.id, 'auto');
+  $('btnRegen').onclick = () => { curEpId = ep.id; generate(); };
+  document.querySelector('.main').scrollTo({ top: 0 });
+}
+
+/* ---------- 策划小助手 / 随机 ---------- */
+$('btnRandom').addEventListener('click', () => {
+  const m = pickMotifBySchedule(); selMotif = m.id;
+  selProtags = [pickProtagBySchedule(m).id];
+  $('inpLocation').value = pickLocationBySchedule()[0];
+  $('inpEvent').value = '';
+  $('tgLegacy').checked = ['跨越','观察','守候','错位','失去'].includes(m.id) && Math.random() < .35;
+  renderProtags(); renderMotifGrid(); renderMotifNote();
+  const st = motifScheduleStatus(m);
+  toast('排班小管家安排:'+MOTIF_FRIENDLY[m.id].emoji+' '+MOTIF_FRIENDLY[m.id].name+' · '+selProtags[0]+' 出场'+(st.ok?'':'(注意:这个味道今天有点挤)'));
+});
+$('btnLoc').addEventListener('click', () => {
+  const cur = $('inpLocation').value;
+  const t = guessLocType(cur);
+  let pool = LOCATIONS.filter(l => l[1]===t);
+  if(!pool.length) pool = LOCATIONS;
+  let n; do { n = pool[Math.floor(Math.random()*pool.length)]; } while(pool.length>1 && n[0]===cur);
+  $('inpLocation').value = n[0];
+});
+$('btnAIEvent').addEventListener('click', async () => {
+  if(!apiReady()) return toast('想点子需要 AI 钥匙','warn');
+  const p = collectParams();
+  if(!p.motifId || !p.protagonists.length || !p.location) return toast('先选好主角、味道和地点','warn');
+  const btn = $('btnAIEvent'); btn.disabled = true; btn.textContent = '…';
+  try{
+    const sys = cfg.agents.planner.prompt || DEFAULT_PLANNER_PROMPT;
+    const usr = '故事类型:'+MOTIF_FRIENDLY[p.motifId].name+'('+MOTIF_BY_ID[p.motifId].soul+')\n主角:'+p.protagonists.join('、')+'\n地点:'+p.location+'\n特别想要的元素:'+(p.special||'无');
+    const opts = agentOpts('planner', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    const out = await apiOnce(sys, usr, { ...opts, maxTokens: 300 });
+    $('inpEvent').value = out.trim().split('\n')[0].slice(0,60);
+  }catch(e){ toast('没想出来:'+e.message,'err'); }
+  finally{ btn.disabled = false; btn.textContent = '✨'; }
+});
+$('btnSample').addEventListener('click', () => {
+  const ep = { id:'ep'+Date.now(), createdAt: Date.now(),
+    title:'海雾里的小怪物', subtitle:'一只变色的章鱼,一整片看不清的海', culture:'冰岛西峡湾的渔村,夏天的海雾说来就来,渔民们靠听浪辨方向。',
+    text: SAMPLE_STORY, wordCount: SAMPLE_STORY.replace(/\s/g,'').length,
+    motifId:'解谜', protagonists:['小满'], location:'冰岛 · 西峡湾', locationType:'海外',
+    legacy:true, special:'', event:'', nicknames:['船长奶奶','图书馆姐姐'],
+    status:'draft', raw:'', revisions:0, checks:null, judge:null, audio:null };
+  ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
+  episodes.push(ep); saveEps();
+  curEpId = ep.id;
+  handleResult(ep);
+  toast('这是示例故事(v1 的种子样本)。体检会指出它的旧格式小毛病——正好看看体检器怎么干活');
+});
+$('btnGenerate').addEventListener('click', generate);
+$('btnStop').addEventListener('click', () => { if(genCtl) genCtl.abort(); });
+
+/* ============================================================
+   故事库
+   ============================================================ */
+let libFilter = 'all';
+function renderLibraryIfVisible(){ const p = document.querySelector('.page[data-page="library"]'); if(p && !p.classList.contains('hidden')) renderLibrary(); }
+function coverBg(m){ return m.density==='high' ? 'linear-gradient(135deg,var(--pink),#F9C6B4)' : m.density==='mid' ? 'linear-gradient(135deg,var(--mint),#D8F2E4)' : 'linear-gradient(135deg,var(--sky),#E2EEFB)'; }
+function renderLibrary(){
+  const eps = sortedEps();
+  /* 本周节奏 */
+  const recent = eps.slice(-7);
+  $('schedStrip').innerHTML = recent.length ? recent.map(e => {
+    const m = MOTIF_BY_ID[e.motifId]; const f = MOTIF_FRIENDLY[e.motifId];
+    return '<div class="sched-cell" style="background:'+coverBg(m||{density:'mid'})+'"><div class="sc-date">'+fmtDate(e.createdAt)+'</div><div class="sc-name">'+(f?f.emoji:'·')+' '+(f?f.name:e.motifId)+'</div><div style="font-size:10.5px;opacity:.8">'+esc(e.protagonists[0])+' · '+esc((e.location||'').split(' · ')[0])+'</div></div>';
+  }).join('') : '<div class="empty" style="padding:8px 0">还没有故事。写好第一集,这里就会长出节奏条。</div>';
+  $('schedRules').innerHTML = scheduleInfo().map(r =>
+    '<div class="rule-row"><span class="rule-id">'+r.id+'</span><span>'+(r.ok?'✅':'⚠️')+' '+r.text+' <span style="color:var(--ink-3)">— '+esc(r.note)+'</span></span></div>').join('');
+  /* 筛选 */
+  const counts = { all: eps.length };
+  Object.keys(STATUS).forEach(k => counts[k] = eps.filter(e=>e.status===k).length);
+  const filters = [['all','全部'],['draft','写好了'],['approved','已通过'],['audio_ready','可以听'],['generating','写作中'],['failed','出错了']];
+  $('filterRow').innerHTML = filters.map(([k,l]) =>
+    '<button class="filter-chip'+(libFilter===k?' on':'')+'" data-f="'+k+'">'+l+(counts[k]?' '+counts[k]:'')+'</button>').join('');
+  $('filterRow').querySelectorAll('.filter-chip').forEach(b => b.addEventListener('click', () => { libFilter = b.dataset.f; renderLibrary(); }));
+  /* 列表 */
+  let list = eps.slice().reverse();
+  if(libFilter !== 'all') list = list.filter(e => e.status === libFilter);
+  $('epList').innerHTML = list.length ? list.map(e => {
+    const m = MOTIF_BY_ID[e.motifId]; const f = MOTIF_FRIENDLY[e.motifId]; const st = STATUS[e.status];
+    const ops = [];
+    ops.push('<button class="btn sm" data-view="'+e.id+'">看</button>');
+    if(e.status==='draft') ops.push('<button class="btn sm mint" data-ok="'+e.id+'">通过</button>');
+    if(e.status==='failed') ops.push('<button class="btn sm primary" data-retry="'+e.id+'">再试一次</button>');
+    if(e.status==='approved') ops.push('<button class="btn sm lilac" data-tts="'+e.id+'">🔊 生成配音</button>');
+    if(e.status==='audio_ready') ops.push('<button class="btn sm lilac" data-play="'+e.id+'">📻 听</button>');
+    if(e.status==='audio_ready') ops.push('<button class="btn sm" data-retts="'+e.id+'">重配</button>');
+    if(e.status==='draft'||e.status==='approved') ops.push('<button class="btn sm" data-speak="'+e.id+'" title="浏览器朗读">🗣</button>');
+    ops.push('<button class="btn sm ghost" data-edit="'+e.id+'">改</button>');
+    ops.push('<button class="btn sm ghost" data-md="'+e.id+'">.md</button>');
+    ops.push('<button class="btn sm ghost" data-del="'+e.id+'">删</button>');
+    return '<div class="ep-item">' +
+      '<div class="ep-cover" style="background:'+coverBg(m||{density:'mid'})+'">'+(f?f.emoji:'📖')+'</div>' +
+      '<div class="ep-main"><div class="ep-title">'+esc(e.title)+' <span class="status-pill '+st.cls+'"><span class="sp-dot"></span>'+st.emoji+' '+st.label+'</span></div>' +
+      '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span><span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
+      '<div class="ep-ops">'+ops.join('')+'</div></div>';
+  }).join('') : '<div class="empty"><span class="e-emoji">🫙</span>'+(libFilter==='all' ? '故事库空空的,去创意工坊写第一集吧' : '这个状态下还没有故事')+'</div>';
+  const q = (sel, fn) => $('epList').querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(episodes.find(x=>x.id===b.dataset[sel.match(/data-(\w+)/)[1]]))));
+  q('[data-view]', e => viewEpisode(e));
+  q('[data-ok]', e => { e.status='approved'; saveEps(); renderLibrary(); toast('通过!可以生成配音了 🎉'); });
+  q('[data-retry]', e => { curEpId = e.id; generate(); });
+  q('[data-tts]', e => ttsGenerate(e));
+  q('[data-retts]', e => ttsGenerate(e, true));
+  q('[data-play]', e => openPlayer(e.id, 'audio'));
+  q('[data-speak]', e => openPlayer(e.id, 'speech'));
+  q('[data-edit]', e => openEditor(e));
+  q('[data-md]', e => downloadMd(e));
+  q('[data-del]', e => { if(confirm('删掉《'+e.title+'》?连音频一起删,不可恢复。')){ idbDel(e.id); episodes = episodes.filter(x=>x.id!==e.id); saveEps(); renderLibrary(); } });
+}
+function viewEpisode(ep){ curEpId = ep.id; handleResult(ep); goPage('workshop'); }
+
+/* ---------- 查看故事弹窗 → 用工坊结果面板展示 ---------- */
+/* ---------- 编辑弹窗 ---------- */
+let editEpId = null;
+function openEditor(ep){
+  editEpId = ep.id;
+  $('emInpTitle').value = ep.title; $('emInpSub').value = ep.subtitle||''; $('emInpCulture').value = ep.culture||''; $('emTaText').value = ep.text||'';
+  $('emHint').textContent = '保存后这集会回到「写好了·待过目」'+(ep.status==='audio_ready'?',原配音会作废':'');
+  $('editModal').classList.remove('hidden');
+}
+$('emClose').addEventListener('click', () => $('editModal').classList.add('hidden'));
+$('emCancel').addEventListener('click', () => $('editModal').classList.add('hidden'));
+$('emSave').addEventListener('click', () => {
+  const ep = episodes.find(e=>e.id===editEpId); if(!ep) return;
+  ep.title = $('emInpTitle').value.trim() || ep.title;
+  ep.subtitle = $('emInpSub').value.trim();
+  ep.culture = $('emInpCulture').value.trim();
+  ep.text = $('emTaText').value.trim();
+  ep.wordCount = ep.text.replace(/\s/g,'').length;
+  ep.nicknames = extractNicknames(ep.text);
+  ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
+  if(ep.status==='audio_ready' || ep.status==='audio_generating'){ idbDel(ep.id); ep.audio = null; }
+  ep.status = 'draft';
+  saveEps(); $('editModal').classList.add('hidden'); renderLibrary();
+  toast('改好了,记得再过目一次 ✏️');
+});
+
+/* ---------- 导出 / 导入 ---------- */
+function downloadText(name, content, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: type||'text/plain;charset=utf-8' }));
+  a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+function epToMd(e){
+  return '# '+e.title+(e.subtitle?'\n\n_'+e.subtitle+'_':'')+'\n\n> '+ (e.culture||'') +'\n\n- 故事类型:'+(MOTIF_FRIENDLY[e.motifId]?MOTIF_FRIENDLY[e.motifId].name:e.motifId)+'\n- 主角:'+e.protagonists.join('、')+'\n- 地点:'+e.location+'\n- 字数:'+(e.wordCount||0)+'\n\n---\n\n'+e.text+'\n';
+}
+const downloadMd = e => downloadText(e.title.replace(/[\\/:*?"<>|]/g,'')+'.md', epToMd(e));
+$('btnExportAll').addEventListener('click', () => {
+  if(!episodes.length) return toast('故事库是空的','warn');
+  downloadText('女孩宇宙-故事库-'+fmtDate(Date.now())+'.json', JSON.stringify({ exportedAt: new Date().toISOString(), episodes }, null, 2), 'application/json');
+});
+$('btnImport').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const j = JSON.parse(r.result);
+      const arr = Array.isArray(j) ? j : j.episodes;
+      if(!Array.isArray(arr)) throw new Error('格式不对');
+      const ids = new Set(episodes.map(e=>e.id));
+      arr.forEach(e => { if(e && e.id && e.text && !ids.has(e.id)){ if(!e.createdAt && e.date) e.createdAt = e.date; if(!e.motifId && e.motif) e.motifId = e.motif; episodes.push(e); } });
+      saveEps(); renderLibrary(); toast('导入完成,现在有 '+episodes.length+' 集');
+    }catch(e){ toast('导入失败:'+e.message,'err'); }
+  };
+  r.readAsText(f); ev.target.value = '';
+});
+$('btnClearEps').addEventListener('click', () => {
+  if(confirm('确认清空全部 '+episodes.length+' 集(含音频)?建议先导出。')){ episodes.forEach(e=>idbDel(e.id)); episodes = []; saveEps(); renderLibrary(); toast('已清空','warn'); }
+});
+
+/* ============================================================
+   音频:IndexedDB + OpenAI 兼容 TTS
+   ============================================================ */
+function idbOpen(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('girlsCosmos', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('audio');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbPut(k, v){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx = db.transaction('audio','readwrite'); tx.objectStore('audio').put(v,k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function idbGet(k){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx = db.transaction('audio','readonly'); const rq = tx.objectStore('audio').get(k); rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); }); }
+async function idbDel(k){ try{ const db = await idbOpen(); const tx = db.transaction('audio','readwrite'); tx.objectStore('audio').delete(k); }catch(e){} }
+
+function chunkText(text){
+  const paras = text.replace(/\*\*/g,'').split(/\n+/).map(s=>s.trim()).filter(s => s && s !== '—');
+  const chunks = []; let cur = '';
+  paras.forEach(p => {
+    if(cur.length + p.length + 1 > 1100){ if(cur) chunks.push(cur); cur = p; }
+    else cur = cur ? cur+'\n'+p : p;
+  });
+  if(cur) chunks.push(cur);
+  return chunks;
+}
+async function ttsGenerate(ep, force){
+  if(!ttsReady()){ toast('还没填配音服务。去「设置 → 配音服务」填一下,或者用 🗣 浏览器朗读先听','warn'); goPage('settings'); return; }
+  ep.status = 'audio_generating'; ep.audio = null; if(force) idbDel(ep.id);
+  saveEps(); renderLibrary();
+  const chunks = chunkText(ep.text);
+  const blobs = [];
+  try{
+    for(let i=0;i<chunks.length;i++){
+      const res = await fetch(cfg.tts.baseUrl.replace(/\/+$/,'') + '/audio/speech', {
+        method:'POST',
+        headers: { 'content-type':'application/json', 'authorization':'Bearer '+cfg.tts.apiKey },
+        body: JSON.stringify({ model: cfg.tts.model || 'tts-1', voice: cfg.tts.voice || 'alloy', input: chunks[i], response_format: 'mp3' })
+      });
+      if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('第'+(i+1)+'段 HTTP '+res.status+(t?' · '+t.slice(0,160):'')); }
+      blobs.push(await res.blob());
+      ep.audioNote = '配音中 '+(i+1)+'/'+chunks.length+' 段'; renderLibrary();
+    }
+    await idbPut(ep.id, new Blob(blobs, { type:'audio/mpeg' }));
+    ep.status = 'audio_ready';
+    ep.audio = { voice: cfg.tts.voice, generatedAt: Date.now(), segments: chunks.length };
+    ep.audioNote = '';
+    saveEps(); renderLibrary();
+    toast('配音完成,去小电台听 🎧');
+  }catch(e){
+    ep.status = 'approved'; ep.audioNote = '';
+    saveEps(); renderLibrary();
+    toast('配音失败:'+e.message,'err');
+  }
+}
+
+/* ============================================================
+   小电台
+   ============================================================ */
+const play = { epId:null, mode:null, sents:[], idx:0, speaking:false, blobUrl:null };
+let voices = [], voice = null;
+const audioEl = new Audio();
+
+function splitSentences(text){
+  const clean = text.replace(/\*\*/g,'');
+  const out = [];
+  clean.split(/\n/).forEach(line => {
+    const t = line.trim();
+    if(!t) return;
+    if(t === '—'){ out.push({ pause:true }); return; }
+    (t.match(/[^。！？!?…]+[。！？!?…]*/g) || [t]).forEach(s => { const x = s.trim(); if(x) out.push({ t: x }); });
+  });
+  return out;
+}
+async function openPlayer(epId, mode){
+  const ep = episodes.find(e=>e.id===epId); if(!ep) return;
+  speechSynthesis.cancel(); audioEl.pause();
+  if(play.blobUrl){ URL.revokeObjectURL(play.blobUrl); play.blobUrl = null; }
+  play.epId = epId;
+  play.sents = splitSentences(ep.text||''); play.idx = 0; play.speaking = false;
+  let useMode = mode;
+  if(useMode === 'auto') useMode = (ep.status === 'audio_ready') ? 'audio' : 'speech';
+  if(useMode === 'audio' && ep.status !== 'audio_ready') useMode = 'speech';
+  play.mode = useMode;
+  const m = MOTIF_BY_ID[ep.motifId], f = MOTIF_FRIENDLY[ep.motifId];
+  $('plEmpty').classList.add('hidden'); $('plBody').classList.remove('hidden');
+  $('plTitle').textContent = ep.title;
+  $('plSub').textContent = ep.subtitle || '';
+  $('plCulture').textContent = ep.culture ? '📍 '+ep.culture : '';
+  const estMin = Math.max(1, Math.round((ep.wordCount||0) / 420));
+  $('plChips').innerHTML = (f?'<span class="pill" style="background:var(--bg-2)">'+f.emoji+' '+f.name+'</span>':'') +
+    '<span class="pill" style="background:var(--bg-2)">'+esc((ep.protagonists||[]).join(' · '))+'</span>' +
+    '<span class="pill" style="background:var(--bg-2)">'+esc(ep.location||'')+'</span>' +
+    '<span class="pill mono" style="background:var(--bg-2)">'+ep.wordCount+' 字 · 约 '+estMin+' 分钟</span>';
+  $('plModeTag').textContent = useMode==='audio' ? '🎧 正式配音' : '🗣 浏览器朗读(试听)';
+  $('seekRow').classList.toggle('hidden', useMode!=='audio');
+  $('btnBack').classList.toggle('hidden', useMode!=='audio');
+  $('btnFwd').classList.toggle('hidden', useMode!=='audio');
+  $('voiceBox').classList.toggle('hidden', useMode!=='speech');
+  $('rateSel').value = '1';
+  if(useMode === 'audio'){
+    const blob = await idbGet(ep.id);
+    if(blob){ play.blobUrl = URL.createObjectURL(blob); audioEl.src = play.blobUrl; audioEl.playbackRate = 1; }
+    else { toast('音频不见了,重新生成一下','warn'); }
+  }
+  renderSents(); updatePlayUI();
+  goPage('player');
+}
+function renderSents(){
+  const showSents = play.mode === 'speech';
+  $('sentBox').style.display = showSents ? '' : 'none';
+  if(!showSents) return;
+  $('sentBox').innerHTML = play.sents.map((s,i) =>
+    s.pause ? '<span class="pause-mark" data-i="'+i+'">· · ·</span>' : '<span class="sent" data-i="'+i+'">'+esc(s.t)+'</span>'
+  ).join(' ');
+}
+function audioPlaylist(){ return sortedEps().filter(e=>e.status==='audio_ready'); }
+function switchTrack(dir){
+  const list = audioPlaylist();
+  const i = list.findIndex(e => e.id === play.epId);
+  const next = list[(i + dir + list.length) % list.length];
+  if(next && next.id !== play.epId){ openPlayer(next.id, 'audio'); return; }
+  toast(dir>0 ? '后面没有啦,这是最后一集' : '前面没有啦,这是第一集');
+}
+audioEl.addEventListener('ended', () => { const list = audioPlaylist(); const i = list.findIndex(e=>e.id===play.epId); if(i>=0 && i<list.length-1) openPlayer(list[i+1].id,'audio'); else updatePlayUI(); });
+audioEl.addEventListener('timeupdate', () => {
+  if(!audioEl.duration) return;
+  $('seekBar').value = Math.round(audioEl.currentTime / audioEl.duration * 1000);
+  $('seekBar').style.setProperty('--prog', (audioEl.currentTime/audioEl.duration*100)+'%');
+  $('tCur').textContent = fmtTime(audioEl.currentTime);
+  $('tDur').textContent = fmtTime(audioEl.duration);
+  $('disc').classList.toggle('spin', !audioEl.paused);
+});
+audioEl.addEventListener('play', () => { $('disc').classList.add('spin'); updatePlayUI(); });
+audioEl.addEventListener('pause', () => { $('disc').classList.remove('spin'); updatePlayUI(); });
+function fmtTime(s){ s = Math.max(0, Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+$('seekBar').addEventListener('input', () => { if(play.mode==='audio' && audioEl.duration){ audioEl.currentTime = $('seekBar').value/1000*audioEl.duration; } });
+$('btnPrevTrack').addEventListener('click', () => switchTrack(-1));
+$('btnNextTrack').addEventListener('click', () => switchTrack(1));
+$('btnBack').addEventListener('click', () => { if(play.mode==='audio') audioEl.currentTime = Math.max(0, audioEl.currentTime-10); });
+$('btnFwd').addEventListener('click', () => { if(play.mode==='audio') audioEl.currentTime = Math.min(audioEl.duration||0, audioEl.currentTime+10); });
+$('rateSel').addEventListener('change', () => {
+  const r = parseFloat($('rateSel').value);
+  if(play.mode==='audio'){ audioEl.playbackRate = r; }
+  else if(play.speaking){ speechSynthesis.cancel(); speakNext(); }
+});
+function playToggle(){
+  if(play.mode==='audio'){
+    if(audioEl.paused) audioEl.play().catch(()=>toast('这段音频播不了,重新生成配音试试','err')); else audioEl.pause();
+    return;
+  }
+  if(play.speaking){ play.speaking = false; speechSynthesis.cancel(); updatePlayUI(); return; }
+  if(!play.sents.length) return;
+  play.speaking = true; speakNext();
+}
+$('btnPlay').addEventListener('click', playToggle);
+function highlight(){
+  const box = $('sentBox');
+  box.querySelectorAll('.sent').forEach(el => {
+    const i = +el.dataset.i;
+    el.classList.toggle('now', i === play.idx);
+    el.classList.toggle('sent-done', play.idx > i);
+  });
+  const cur = box.querySelector('.sent[data-i="'+play.idx+'"]');
+  if(cur && cur.scrollIntoView) cur.scrollIntoView({ block:'center', behavior:'smooth' });
+  $('disc').classList.toggle('spin', play.speaking);
+}
+function updatePlayUI(){
+  if(play.mode==='audio'){
+    $('btnPlay').textContent = audioEl.paused ? '▶' : '❚❚';
+    $('disc').classList.toggle('spin', !audioEl.paused && !audioEl.ended);
+  } else {
+    $('btnPlay').textContent = play.speaking ? '❚❚' : '▶';
+    $('disc').classList.toggle('spin', play.speaking);
+  }
+}
+function speakNext(){
+  if(!play.speaking) return;
+  if(play.idx >= play.sents.length){ play.speaking = false; play.idx = 0; highlight(); updatePlayUI(); return; }
+  const s = play.sents[play.idx];
+  highlight();
+  if(s.pause){ setTimeout(() => { play.idx++; speakNext(); }, 420); return; }
+  const u = new SpeechSynthesisUtterance(s.t);
+  if(voice) u.voice = voice;
+  u.lang = voice ? voice.lang : 'zh-CN';
+  u.rate = parseFloat($('rateSel').value) || 1;
+  u.pitch = 1.05;
+  u.onend = () => { play.idx++; speakNext(); };
+  u.onerror = ev => { if(ev.error === 'interrupted' || ev.error === 'canceled') return; play.idx++; speakNext(); };
+  speechSynthesis.speak(u);
+}
+$('btnCopy').addEventListener('click', () => { const ep = episodes.find(e=>e.id===play.epId); if(ep) navigator.clipboard.writeText(ep.text.replace(/\*\*/g,'')).then(()=>toast('全文已复制')); });
+$('btnDl').addEventListener('click', () => { const ep = episodes.find(e=>e.id===play.epId); if(ep) downloadMd(ep); });
+function loadVoices(){
+  voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(v => /^zh/i.test(v.lang));
+  const sel = $('voiceSel'); const prev = sel.value;
+  sel.innerHTML = voices.length
+    ? voices.map(v => '<option value="'+esc(v.name)+'">'+esc(v.name+' ('+v.lang+')')+'</option>').join('')
+    : '<option value="">(没有中文声音)</option>';
+  if(!voices.length){ $('plTtsWarn').classList.remove('hidden'); voice = null; return; }
+  $('plTtsWarn').classList.add('hidden');
+  const pick = voices.find(v => prev && v.name === prev)
+    || voices.find(v => /zh[-_]CN/i.test(v.lang) && /女|婷|Ting|Xiaoxiao|Yaoyao|Huihui|Meijia/i.test(v.name))
+    || voices.find(v => /zh[-_]CN/i.test(v.lang)) || voices[0];
+  voice = pick; sel.value = pick.name;
+}
+$('voiceSel').addEventListener('change', () => { voice = voices.find(v => v.name === $('voiceSel').value) || null; if(play.speaking){ speechSynthesis.cancel(); speakNext(); } });
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
+function syncPlayerVisible(){ if(play.epId) updatePlayUI(); }
+
+/* ============================================================
+   设置
+   ============================================================ */
+function curProtoCfg(){ return cfg.provider === 'anthropic' ? cfg.anthropic : cfg.openai; }
+function renderSettings(){
+  document.querySelectorAll('#segProvider button').forEach(b => b.classList.toggle('on', b.dataset.p === cfg.provider));
+  const c = curProtoCfg();
+  $('inpBase').value = c.baseUrl; $('inpKey').value = c.apiKey; $('inpModel').value = c.model;
+  $('modelList').innerHTML = (cfg.provider === 'anthropic'
+    ? ['claude-fable-5','claude-opus-5','claude-sonnet-5','claude-haiku-4-5']
+    : ['gpt-4o','gpt-4o-mini','deepseek-chat','glm-4-plus','qwen-max','moonshot-v1-32k']).map(m=>'<option value="'+m+'">').join('');
+  /* 三助手 */
+  $('agPlannerModel').value = cfg.agents.planner.model;
+  $('agPlannerTemp').value = cfg.agents.planner.temperature;
+  $('agPlannerTempV').textContent = (+cfg.agents.planner.temperature).toFixed(2);
+  $('agPlannerPrompt').value = cfg.agents.planner.prompt;
+  $('agWriterModel').value = cfg.agents.writer.model;
+  $('agWriterTemp').value = cfg.agents.writer.temperature;
+  $('agWriterTempV').textContent = (+cfg.agents.writer.temperature).toFixed(2);
+  $('agWriterMax').value = cfg.agents.writer.maxTokens;
+  $('agJudgeModel').value = cfg.agents.judge.model;
+  $('agJudgeTemp').value = cfg.agents.judge.temperature;
+  $('agJudgeTempV').textContent = (+cfg.agents.judge.temperature).toFixed(2);
+  $('agJudgePrompt').value = cfg.agents.judge.prompt;
+  /* TTS */
+  $('ttsBase').value = cfg.tts.baseUrl; $('ttsKey').value = cfg.tts.apiKey;
+  $('ttsModel').value = cfg.tts.model; $('ttsVoice').value = cfg.tts.voice;
+  $('promptTa').value = promptConstant;
+  $('promptChars').textContent = promptConstant.length + ' 字符';
+}
+document.querySelectorAll('#segProvider button').forEach(b => b.addEventListener('click', () => { cfg.provider = b.dataset.p; renderSettings(); }));
+$('btnSaveApi').addEventListener('click', () => {
+  const c = curProtoCfg();
+  c.baseUrl = $('inpBase').value.trim() || (cfg.provider==='anthropic'?'https://api.anthropic.com':'https://api.openai.com/v1');
+  c.apiKey = $('inpKey').value.trim(); c.model = $('inpModel').value.trim() || c.model;
+  saveCfg(); updateApiDot(); toast('钥匙存好了(只在这台电脑的浏览器里) 🔑');
+});
+['agPlanner','agWriter','agJudge'].forEach(id => $(id+'Temp').addEventListener('input', () => $(id+'TempV').textContent = parseFloat($(id+'Temp').value).toFixed(2)));
+$('btnSaveAgents').addEventListener('click', () => {
+  cfg.agents.planner.model = $('agPlannerModel').value.trim();
+  cfg.agents.planner.temperature = parseFloat($('agPlannerTemp').value);
+  cfg.agents.planner.prompt = $('agPlannerPrompt').value.trim() || DEFAULT_PLANNER_PROMPT;
+  cfg.agents.writer.model = $('agWriterModel').value.trim();
+  cfg.agents.writer.temperature = parseFloat($('agWriterTemp').value);
+  cfg.agents.writer.maxTokens = Math.min(16000, Math.max(1000, parseInt($('agWriterMax').value)||6000));
+  cfg.agents.judge.model = $('agJudgeModel').value.trim();
+  cfg.agents.judge.temperature = parseFloat($('agJudgeTemp').value);
+  cfg.agents.judge.prompt = $('agJudgePrompt').value.trim() || DEFAULT_JUDGE_HEAD;
+  saveCfg(); toast('三个小助手的脾气记下了 🤖');
+});
+$('btnSaveTts').addEventListener('click', () => {
+  cfg.tts.baseUrl = $('ttsBase').value.trim() || 'https://api.openai.com/v1';
+  cfg.tts.apiKey = $('ttsKey').value.trim();
+  cfg.tts.model = $('ttsModel').value.trim() || 'tts-1';
+  cfg.tts.voice = $('ttsVoice').value.trim() || 'alloy';
+  saveCfg(); toast('配音设置存好了 🔊');
+});
+$('btnResetPrompt').addEventListener('click', () => { $('promptTa').value = DEFAULT_CONSTANT; $('promptChars').textContent = DEFAULT_CONSTANT.length+' 字符'; toast('恢复成默认了,记得点「保存」'); });
+$('btnSavePrompt').addEventListener('click', () => {
+  promptConstant = $('promptTa').value.trim() || DEFAULT_CONSTANT;
+  savePrompt(); $('promptChars').textContent = promptConstant.length+' 字符'; toast('故事圣经已保存 📜');
+});
+$('promptTa').addEventListener('input', () => { $('promptChars').textContent = $('promptTa').value.length+' 字符(还没保存)'; });
+
+/* ============================================================
+   初始化
+   ============================================================ */
+loadAll();
+renderProtags(); renderMotifGrid(); renderSettings(); updateApiDot(); renderLibraryIfVisible();
+</script>
+</body>
+</html>
