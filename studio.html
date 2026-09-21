@@ -385,7 +385,7 @@
         <div>
           <div class="card hidden" id="resultCard"><div id="resultBody"></div></div>
           <div class="card hidden" id="streamCard">
-            <div class="card-title">✍️ 正在写…</div>
+            <div class="card-title">✍️ 正在写… <span class="mono" id="streamStat" style="font-size:11px;color:var(--ink-3);font-weight:400"></span></div>
             <div class="stream-box" id="streamBox"></div>
             <details class="prompt-det">
               <summary>▸ 给 AI 的完整提示词(给爱调试的你)</summary>
@@ -520,6 +520,7 @@
           <datalist id="modelList"></datalist>
         </div>
         <button class="btn primary" id="btnSaveApi">保存</button>
+        <button class="btn" id="btnTestApi">🔌 测试连接</button>
       </div>
 
       <div class="card">
@@ -1089,9 +1090,24 @@ async function apiStream(system, user, onDelta, signal, opts){
     headers = { 'content-type':'application/json', 'authorization':'Bearer '+pc.apiKey };
     body = { model: opts.model || pc.model || 'gpt-4o', temperature: opts.temperature ?? 1, max_tokens: opts.maxTokens || 6000, stream:true, messages:[{role:'system',content:system},{role:'user',content:user}] };
   }
-  const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body), signal });
-  if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
-  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
+  const lc = new AbortController();
+  const onOuter = () => lc.abort();
+  if(signal){ if(signal.aborted) lc.abort(); else signal.addEventListener('abort', onOuter); }
+  let timedOut = false; const lastAct = { t: Date.now() };
+  const wd = setInterval(() => { if(Date.now() - lastAct.t > 90000){ timedOut = true; lc.abort(); } }, 5000);
+  const emit = t => { lastAct.t = Date.now(); onDelta(t); };
+  try{
+    const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body), signal: lc.signal });
+    if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
+    const ctype = (res.headers.get('content-type')||'').toLowerCase();
+    if(ctype.includes('json')){
+      /* 有些中转会忽略 stream 参数,整段 JSON 返回——照常处理 */
+      const j = await res.json();
+      const txt = isA ? ((j.content||[]).map(c=>c.text||'').join('')) : ((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'');
+      if(txt) emit(txt);
+      return;
+    }
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
   while(true){
     const {done, value} = await reader.read(); if(done) break;
     buf += dec.decode(value, {stream:true});
@@ -1103,10 +1119,19 @@ async function apiStream(system, user, onDelta, signal, opts){
       if(data === '[DONE]') continue;
       try{
         const j = JSON.parse(data);
-        if(isA){ if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') onDelta(j.delta.text); }
-        else { const d = j.choices && j.choices[0] && j.choices[0].delta; if(d && typeof d.content==='string') onDelta(d.content); }
+        if(isA){ if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') emit(j.delta.text); }
+        else { const d = j.choices && j.choices[0] && j.choices[0].delta; if(d && typeof d.content==='string' && d.content) emit(d.content); }
       }catch(e){}
     }
+  }
+  }catch(e){
+    if(timedOut) throw new Error('90 秒没有收到新内容,已自动停止。常见原因:中转服务卡住、不支持流式输出、或网络不通。可在设置里点「测试连接」排查');
+    if(e.name === 'AbortError' && signal && signal.aborted) throw e;
+    if(e.name === 'AbortError') throw new Error('请求被中断,请重试');
+    throw e;
+  }finally{
+    clearInterval(wd);
+    if(signal) signal.removeEventListener('abort', onOuter);
   }
 }
 async function apiOnce(system, user, opts){
@@ -1250,14 +1275,25 @@ async function generate(){
   let raw = '';
   try{
     const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
-    await apiStream(sys, usr, t => { raw += t; const box = $('streamBox'); box.textContent = raw; box.scrollTop = box.scrollHeight; }, genCtl.signal, opts);
-    if(!raw.trim()) throw new Error('AI 没有返回内容');
-    Object.assign(ep, { raw, status:'draft' });
+    const t0 = Date.now(); let lastUi = 0, lastSave = 0;
+    await apiStream(sys, usr, t => {
+      raw += t;
+      const box = $('streamBox'); box.textContent = raw; box.scrollTop = box.scrollHeight;
+      const now = Date.now();
+      if(now - lastUi > 500){
+        lastUi = now;
+        $('streamStat').textContent = '已用时 ' + Math.round((now-t0)/1000) + ' 秒 · 已收到 ' + raw.length + ' 字';
+        ep.statusNote = '写作中 · 已收到 ' + raw.length + ' 字';
+        if(now - lastSave > 2000){ lastSave = now; saveEps(); renderLibraryIfVisible(); }
+      }
+    }, genCtl.signal, opts);
+    if(!raw.trim()) throw new Error('AI 没有返回内容(接口通了但返回空——多半是模型名填错,或这个模型不支持该调用方式)');
+    Object.assign(ep, { raw, status:'draft', statusNote:'' });
     applyParsed(ep);
     toast('写好啦,快看看 ✨');
     handleResult(ep);
   }catch(e){
-    ep.status = 'failed'; saveEps();
+    ep.status = 'failed'; ep.statusNote = ''; saveEps();
     if(e.name === 'AbortError') toast('停下来了,可以点「再试一次」','warn');
     else { toast('写作失败:'+e.message,'err'); $('idleCard').classList.remove('hidden'); $('streamCard').classList.add('hidden'); }
   }finally{ setBusy(false); genCtl = null; renderLibraryIfVisible(); }
@@ -1292,7 +1328,8 @@ async function rewrite(ep, extraNote){
   let raw = '';
   try{
     const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
-    await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; }, genCtl.signal, opts);
+    const t0 = Date.now();
+    await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; const s=$('streamStat'); if(s) s.textContent = '已用时 '+Math.round((Date.now()-t0)/1000)+' 秒 · 已收到 '+raw.length+' 字'; }, genCtl.signal, opts);
     ep.raw = raw; ep.revisions = (ep.revisions||0)+1;
     applyParsed(ep);
     handleResult(ep);
@@ -1464,7 +1501,7 @@ function renderLibrary(){
     return '<div class="ep-item">' +
       '<div class="ep-cover" style="background:'+coverBg(m||{density:'mid'})+'">'+(f?f.emoji:'📖')+'</div>' +
       '<div class="ep-main"><div class="ep-title">'+esc(e.title)+' <span class="status-pill '+st.cls+'"><span class="sp-dot"></span>'+st.emoji+' '+st.label+'</span></div>' +
-      '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span><span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
+      '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span>'+(e.statusNote?'<span style="color:var(--lemon-dd);font-weight:600">'+esc(e.statusNote)+'</span>':'')+'<span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
       '<div class="ep-ops">'+ops.join('')+'</div></div>';
   }).join('') : '<div class="empty"><span class="e-emoji">🫙</span>'+(libFilter==='all' ? '故事库空空的,去创意工坊写第一集吧' : '这个状态下还没有故事')+'</div>';
   const q = (sel, fn) => $('epList').querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(episodes.find(x=>x.id===b.dataset[sel.match(/data-(\w+)/)[1]]))));
@@ -1787,6 +1824,22 @@ $('btnSaveApi').addEventListener('click', () => {
   c.baseUrl = $('inpBase').value.trim() || (cfg.provider==='anthropic'?'https://api.anthropic.com':'https://api.openai.com/v1');
   c.apiKey = $('inpKey').value.trim(); c.model = $('inpModel').value.trim() || c.model;
   saveCfg(); updateApiDot(); toast('钥匙存好了(只在这台电脑的浏览器里) 🔑');
+});
+$('btnTestApi').addEventListener('click', async () => {
+  const c = curProtoCfg();
+  c.baseUrl = $('inpBase').value.trim() || (cfg.provider==='anthropic'?'https://api.anthropic.com':'https://api.openai.com/v1');
+  c.apiKey = $('inpKey').value.trim(); c.model = $('inpModel').value.trim() || c.model;
+  saveCfg(); updateApiDot();
+  if(!apiReady()) return toast('钥匙是空的,测不了','warn');
+  const btn = $('btnTestApi'); btn.disabled = true; const old = btn.textContent; btn.textContent = '测试中…';
+  const t0 = Date.now();
+  try{
+    const out = await apiOnce('你是连通测试助手。', '只回复两个字:收到', { maxTokens: 30, temperature: 0 });
+    const secs = ((Date.now()-t0)/1000).toFixed(1);
+    const r = (out||'').trim();
+    toast(r ? '✅ 连接正常!延迟 '+secs+' 秒,模型回复:「'+r.slice(0,14)+'」' : '接口通了('+secs+' 秒),但返回内容为空——多半是模型名不对');
+  }catch(e){ toast('❌ 测试失败:'+e.message,'err'); }
+  finally{ btn.disabled = false; btn.textContent = old; }
 });
 ['agPlanner','agWriter','agJudge'].forEach(id => $(id+'Temp').addEventListener('input', () => $(id+'TempV').textContent = parseFloat($(id+'Temp').value).toFixed(2)));
 $('btnSaveAgents').addEventListener('click', () => {
