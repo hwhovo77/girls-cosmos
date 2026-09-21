@@ -512,7 +512,7 @@
             <button data-p="openai">OpenAI 兼容</button>
           </div>
         </div>
-        <div class="field"><label>Base URL</label><input type="text" id="inpBase" placeholder="https://api.anthropic.com"></div>
+        <div class="field"><label>Base URL <span class="f-hint">填到域名或 /v1 就行;粘了带 /chat/completions 的完整地址也会自动纠正</span></label><input type="text" id="inpBase" placeholder="https://api.anthropic.com"></div>
         <div class="field"><label>API Key</label><input type="password" id="inpKey" placeholder="sk-…" autocomplete="off"></div>
         <div class="field">
           <label>默认模型 <span class="f-hint">下面每个小助手还可以单独换模型</span></label>
@@ -1076,12 +1076,15 @@ async function apiStream(system, user, onDelta, signal, opts){
   const pc = isA ? cfg.anthropic : cfg.openai;
   let url, headers, body;
   if(isA){
-    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
-    url = base + '/v1/messages';
+    let base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
+    base = base.replace(/(?:\/messages)+$/i, '');
+    if(!/\/v\d+$/.test(base)) base += '/v1';
+    url = base + '/messages';
     headers = { 'content-type':'application/json', 'x-api-key':pc.apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
     body = { model: opts.model || pc.model || 'claude-sonnet-5', max_tokens: opts.maxTokens || 6000, temperature: opts.temperature ?? 1, system, messages:[{role:'user',content:user}], stream:true };
   } else {
-    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    let base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    base = base.replace(/(?:\/chat\/completions)+$/i, '');
     url = base + '/chat/completions';
     headers = { 'content-type':'application/json', 'authorization':'Bearer '+pc.apiKey };
     body = { model: opts.model || pc.model || 'gpt-4o', temperature: opts.temperature ?? 1, max_tokens: opts.maxTokens || 6000, stream:true, messages:[{role:'system',content:system},{role:'user',content:user}] };
@@ -1112,12 +1115,15 @@ async function apiOnce(system, user, opts){
   const pc = isA ? cfg.anthropic : cfg.openai;
   let url, headers, body;
   if(isA){
-    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
-    url = base + '/v1/messages';
+    let base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.anthropic.com';
+    base = base.replace(/(?:\/messages)+$/i, '');
+    if(!/\/v\d+$/.test(base)) base += '/v1';
+    url = base + '/messages';
     headers = { 'content-type':'application/json', 'x-api-key':pc.apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
     body = { model: opts.model || pc.model || 'claude-sonnet-5', max_tokens: opts.maxTokens || 2000, temperature: opts.temperature ?? 0, system, messages:[{role:'user',content:user}] };
   } else {
-    const base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    let base = (pc.baseUrl||'').trim().replace(/\/+$/,'') || 'https://api.openai.com/v1';
+    base = base.replace(/(?:\/chat\/completions)+$/i, '');
     url = base + '/chat/completions';
     headers = { 'content-type':'application/json', 'authorization':'Bearer '+pc.apiKey };
     body = { model: opts.model || pc.model || 'gpt-4o', temperature: opts.temperature ?? 0, max_tokens: opts.maxTokens || 2000, messages:[{role:'system',content:system},{role:'user',content:user}] };
@@ -1568,7 +1574,8 @@ async function ttsGenerate(ep, force){
   const blobs = [];
   try{
     for(let i=0;i<chunks.length;i++){
-      const res = await fetch(cfg.tts.baseUrl.replace(/\/+$/,'') + '/audio/speech', {
+      let tb = cfg.tts.baseUrl.trim().replace(/\/+$/,'').replace(/(?:\/audio\/speech)+$/i, '');
+    const res = await fetch(tb + '/audio/speech', {
         method:'POST',
         headers: { 'content-type':'application/json', 'authorization':'Bearer '+cfg.tts.apiKey },
         body: JSON.stringify({ model: cfg.tts.model || 'tts-1', voice: cfg.tts.voice || 'alloy', input: chunks[i], response_format: 'mp3' })
