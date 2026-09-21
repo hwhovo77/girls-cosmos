@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>女孩宇宙 · 故事生产间 v3.1.3</title>
+<title>🗺️ 小满的地图 · 故事生产间</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=IBM+Plex+Sans+SC:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -60,8 +61,8 @@
   .brand { padding: 0 22px 24px; border-bottom: 1px dashed var(--line); }
   .brand-row { display: flex; align-items: center; gap: 8px; }
   .brand-moon { font-size: 22px; }
-  .brand-title { font-family: var(--disp); font-size: 22px; letter-spacing: .02em; color: var(--ink); }
-  .brand-sub { font-size: 10px; letter-spacing: .16em; color: var(--ink-3); margin-top: 6px; font-family: var(--mono); }
+  .brand-title { font-family: var(--disp); font-size: 21px; letter-spacing: .02em; color: var(--ink); }
+  .brand-sub { font-size: 10px; letter-spacing: .14em; color: var(--ink-3); margin-top: 6px; font-family: var(--mono); }
   .nav { padding: 18px 14px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
   .nav-item {
     display: flex; align-items: center; gap: 10px; padding: 11px 14px;
@@ -78,12 +79,14 @@
   .api-row { display: flex; align-items: center; gap: 7px; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); flex: none; }
   .dot.on { background: var(--mint-d); box-shadow: 0 0 0 3px var(--mint); }
+  .gen-row { margin-top: 7px; color: var(--pink-d); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .gen-row .sp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink-d); animation: blink 1s infinite; }
   .foot-ver { margin-top: 5px; color: var(--ink-4); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; }
+  @keyframes blink { 50% { opacity: .25; } }
 
   /* ================= 页面骨架 ================= */
   .main { overflow-y: auto; overflow-x: hidden; }
   .page-header { padding: 30px 46px 20px; position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px dashed var(--line); }
-  .page-header::after { content:''; position:absolute; left:46px; right:46px; bottom:-1px; }
   .crumb { font-family: var(--mono); font-size: 10px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
   .page-title { font-family: var(--disp); font-weight: 400; font-size: 32px; line-height: 1.2; display: flex; align-items: center; gap: 10px; }
   .page-title .pt-emoji { font-size: 26px; }
@@ -93,8 +96,8 @@
   /* ================= 通用组件 ================= */
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 22px; box-shadow: var(--shadow-sm); }
   .card + .card { margin-top: 18px; }
-  .card-title { font-family: var(--disp); font-size: 17px; display: flex; align-items: center; gap: 7px; }
-  .card-hint { font-size: 12px; color: var(--ink-3); margin: 3px 0 14px; }
+  .card-title { font-family: var(--disp); font-size: 17px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-hint { font-size: 12px; color: var(--ink-3); margin: 3px 0 14px; line-height: 1.6; }
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 9px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
@@ -130,8 +133,20 @@
   .switch input:checked ~ .track { background: var(--mint-d); }
   .switch input:checked ~ .knob { left: 20.5px; }
 
-  /* ================= 工坊 ================= */
-  .ws-grid { display: grid; grid-template-columns: 380px 1fr; gap: 22px; align-items: start; }
+  /* ================= 工坊:左右分栏可拖动 ================= */
+  .ws-wrap { display: flex; align-items: stretch; width: 100%; }
+  .ws-left { flex: 1 1 auto; min-width: 340px; }
+  .ws-wrap.open .ws-left { flex: 0 0 var(--ws-left, 44%); }
+  .ws-left .card { max-width: 560px; margin: 0 auto 18px; }
+  .ws-divider { flex: 0 0 14px; cursor: col-resize; display: none; align-items: center; justify-content: center; user-select: none; touch-action: none; }
+  .ws-wrap.open .ws-divider { display: flex; }
+  .ws-divider .grip { width: 4px; height: 72px; border-radius: 99px; background: var(--line); transition: background .15s; }
+  .ws-divider:hover .grip, .ws-divider.dragging .grip { background: var(--pink-d); }
+  .ws-right { flex: 0 0 var(--ws-right, 56%); display: none; min-width: 320px; position: relative; padding-left: 4px; }
+  .ws-wrap.open .ws-right { display: block; }
+  .ws-close { position: absolute; top: 8px; right: 0px; z-index: 5; width: 30px; height: 30px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--line); box-shadow: var(--shadow-sm); font-size: 13px; color: var(--ink-3); }
+  .ws-close:hover { color: var(--ink); }
+
   .protag-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .protag-card {
     border: 2px solid var(--line); border-radius: 18px; padding: 13px 6px 11px; text-align: center;
@@ -143,8 +158,11 @@
   .protag-card.sel-p2 { border-color: var(--lilac-d); background: linear-gradient(160deg, #F5EEFB 0%, var(--lilac) 130%); box-shadow: 0 5px 16px rgba(154,111,208,.22); }
   .protag-emoji { font-size: 24px; }
   .protag-name { font-family: var(--disp); font-size: 15px; margin-top: 2px; }
-  .protag-tag { font-size: 10.5px; color: var(--ink-2); line-height: 1.4; }
+  .protag-tag { font-size: 10.5px; color: var(--ink-2); line-height: 1.45; }
   .protag-ord { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-size: 10.5px; padding: 2px 9px; border-radius: 99px; background: var(--ink); color: #FFF6EC; white-space: nowrap; font-weight: 500; }
+  .protag-intro { margin-top: 12px; border-top: 1px dashed var(--line-soft); padding-top: 10px; }
+  .protag-intro div { padding: 3px 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
+  .protag-intro b { color: var(--ink); font-weight: 600; }
 
   .motif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
   .motif-chip {
@@ -173,7 +191,9 @@
   }
   .banner button { color: var(--lemon-dd); text-decoration: underline; font-size: 13px; font-weight: 600; }
 
-  .stream-box { background: #4A3B33; color: #F3E7D8; border-radius: 16px; padding: 18px; font-family: var(--mono); font-size: 12px; line-height: 1.75; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
+  .think-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+  .think-box { background: #F7EDDE; color: #8A7458; border-radius: 12px; padding: 10px 13px; font-family: var(--mono); font-size: 11.5px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+  .stream-box { background: #4A3B33; color: #F3E7D8; border-radius: 16px; padding: 18px; font-family: var(--mono); font-size: 12px; line-height: 1.75; white-space: pre-wrap; word-break: break-word; max-height: 340px; overflow-y: auto; }
   details.prompt-det { margin-top: 14px; }
   details.prompt-det summary { cursor: pointer; font-size: 12px; color: var(--ink-3); user-select: none; }
   details.prompt-det pre { margin-top: 10px; background: var(--bg-2); border-radius: 12px; padding: 14px; font-family: var(--mono); font-size: 11px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; }
@@ -210,7 +230,7 @@
   .ep-main { flex: 1; min-width: 0; }
   .ep-title { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .ep-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
-  .ep-ops { display: flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; max-width: 320px; }
+  .ep-ops { display: flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; max-width: 340px; }
   .status-pill { padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
   .st-generating { background: var(--lemon); color: var(--lemon-dd); }
   .st-draft { background: var(--pink); color: var(--pink-dd); }
@@ -219,14 +239,12 @@
   .st-ready { background: var(--lilac); color: var(--lilac-dd); }
   .st-failed { background: #FDE8E2; color: #A03D2C; }
   .st-generating .sp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lemon-dd); animation: blink 1s infinite; }
-  @keyframes blink { 50% { opacity: .25; } }
   .sched-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
   .sched-cell { border-radius: 14px; padding: 8px 13px; font-size: 12px; min-width: 96px; }
   .sched-cell .sc-date { font-family: var(--mono); font-size: 9.5px; opacity: .7; }
   .sched-cell .sc-name { font-weight: 600; font-size: 12.5px; }
-  .rule-row { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--line-soft); }
+  .rule-row { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 6px 0; border-bottom: 1px dashed var(--line-soft); line-height: 1.6; }
   .rule-row:last-child { border-bottom: none; }
-  .rule-id { font-family: var(--mono); font-size: 10px; color: var(--ink-4); width: 24px; flex: none; }
 
   /* ================= 小电台 ================= */
   .radio-stage { display: flex; gap: 26px; align-items: flex-start; }
@@ -266,7 +284,7 @@
   .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 99px; overflow: hidden; background: var(--card); }
   .seg button { padding: 7px 18px; font-size: 13px; }
   .seg button.on { background: var(--ink); color: #FFF6EC; }
-  .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .agent-card { border-radius: 18px; padding: 18px; border: 2px solid; }
   .agent-card.a-planner { border-color: var(--lemon); background: linear-gradient(165deg, #FFFBEF 0%, var(--lemon) 160%); }
   .agent-card.a-writer { border-color: var(--pink); background: linear-gradient(165deg, #FFF4F7 0%, var(--pink) 160%); }
@@ -274,7 +292,7 @@
   .agent-card .ag-name { font-family: var(--disp); font-size: 16px; display: flex; gap: 7px; align-items: center; }
   .agent-card .ag-desc { font-size: 11.5px; color: var(--ink-2); margin: 3px 0 12px; line-height: 1.5; }
   .agent-card .field input, .agent-card .field textarea, .agent-card .field select { background: rgba(255,255,255,.75); }
-  .agent-card .field textarea { font-size: 11px; font-family: var(--mono); min-height: 84px; }
+  .agent-card .field textarea { font-size: 11px; font-family: var(--mono); min-height: 100px; }
   .slider-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
   .slider-row input[type=range] { flex: 1; accent-color: var(--pink-d); }
 
@@ -284,21 +302,31 @@
   .modal-head { padding: 18px 24px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--line); }
   .modal-head .mh-title { font-family: var(--disp); font-size: 19px; flex: 1; }
   .modal-body { padding: 18px 24px; overflow-y: auto; }
-  .modal-foot { padding: 14px 24px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px dashed var(--line); }
+  .modal-foot { padding: 14px 24px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px dashed var(--line); flex-wrap: wrap; }
+  /* 全屏查看弹窗 */
+  .modal.view { width: min(1200px, 100%); max-height: 92vh; }
+  .vm-grid { display: grid; grid-template-columns: 330px 1fr; gap: 22px; align-items: start; }
+  .vm-left .vm-sec { font-family: var(--disp); font-size: 14px; margin: 14px 0 6px; color: var(--ink-2); }
+  .vm-left .vm-sec:first-child { margin-top: 0; }
+  .vm-kv { font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--line-soft); display: flex; gap: 8px; }
+  .vm-kv b { flex: none; color: var(--ink-3); font-weight: 500; width: 64px; }
+  .vm-right { min-width: 0; max-height: calc(92vh - 170px); overflow-y: auto; padding-right: 6px; }
+  @media (max-width: 900px) { .vm-grid { grid-template-columns: 1fr; } .vm-right { max-height: none; } }
 
-  /* ================= Toast ================= */
-  #toasts { position: fixed; bottom: 26px; right: 26px; display: flex; flex-direction: column; gap: 9px; z-index: 99; }
-  .toast { background: var(--ink); color: #FFF6EC; padding: 11px 18px; border-radius: 99px; font-size: 13px; box-shadow: 0 8px 26px rgba(74,59,51,.3); animation: pop .22s cubic-bezier(.34,1.56,.64,1); max-width: 400px; }
+  /* ================= Toast(顶部居中) ================= */
+  #toasts { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 9px; z-index: 99; align-items: center; }
+  .toast { background: var(--ink); color: #FFF6EC; padding: 11px 20px; border-radius: 99px; font-size: 13px; box-shadow: 0 8px 26px rgba(74,59,51,.3); animation: drop .25s cubic-bezier(.34,1.56,.64,1); max-width: min(560px, 90vw); text-align: center; }
   .toast.warn { background: var(--lemon-dd); }
   .toast.err { background: var(--bad); }
-  @keyframes pop { from { transform: translateY(10px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes drop { from { transform: translateY(-14px) scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
 
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 99px; border: 2px solid var(--bg); }
   ::-webkit-scrollbar-track { background: transparent; }
 
   @media (max-width: 1080px) {
-    .ws-grid { grid-template-columns: 1fr; }
+    .ws-wrap { flex-direction: column; }
+    .ws-divider { display: none !important; }
     .radio-stage { flex-direction: column; align-items: center; }
     .page-header, .page-body { padding-left: 22px; padding-right: 22px; }
   }
@@ -308,8 +336,8 @@
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-row"><span class="brand-moon">🌙</span><span class="brand-title">女孩宇宙</span></div>
-      <div class="brand-sub">STORY STUDIO · v3.1</div>
+      <div class="brand-row"><span class="brand-moon">🗺️</span><span class="brand-title">小满的地图</span></div>
+      <div class="brand-sub">XIAOMAN'S MAP · STUDIO</div>
     </div>
     <nav class="nav">
       <button class="nav-item active" data-page="workshop"><span class="ni-emoji">🎨</span>创意工坊</button>
@@ -319,7 +347,8 @@
     </nav>
     <div class="sidebar-foot">
       <div class="api-row"><span class="dot" id="apiDot"></span><span id="apiStatusText">AI 钥匙未填</span></div>
-      <div class="foot-ver">build v3.1.3</div>
+      <div class="gen-row hidden" id="genRow"><span class="sp-dot"></span>有故事在写…</div>
+      <div class="foot-ver">build v3.2</div>
     </div>
   </aside>
 
@@ -330,74 +359,73 @@
     <div class="page-header">
       <div class="crumb">Workshop</div>
       <h1 class="page-title"><span class="pt-emoji">🎨</span>创意工坊</h1>
-      <p class="page-desc">选一个女孩、挑一种故事、定一个地方——剩下的交给 AI 写。写好的故事会自动存进故事库。</p>
+      <p class="page-desc">选一个女孩、挑一种故事、定一个地方——剩下的交给 AI 写。写好的故事会自动存进故事库；中途切去别的页面也不影响，它会继续写完。</p>
     </div>
     <div class="page-body">
-      <div class="banner hidden" id="noKeyBanner">🍪 还没有填 AI 钥匙,写不了新故事。<button data-goto="settings">去设置填一下 →</button>或者先<button id="btnSample" style="text-decoration:underline">看看一个写好的示例</button></div>
-      <div class="ws-grid">
-        <div>
+      <div class="banner hidden" id="noKeyBanner">🍪 还没有填 AI 钥匙，写不了新故事。<button data-goto="settings">去设置填一下 →</button>或者先<button id="btnSample" style="text-decoration:underline">看看一个写好的示例</button></div>
+      <div class="ws-wrap" id="wsWrap">
+        <div class="ws-left" id="wsLeft">
           <div class="card">
             <div class="card-title">👋 今天的主角</div>
-            <div class="card-hint">先点的是主角;再点别人,就是来一起玩的伙伴</div>
+            <div class="card-hint">先点的是主角；再点别人，就是来一起玩的伙伴</div>
             <div class="protag-row" id="protagRow"></div>
-            <div class="schedule-note" style="margin-top:12px">🌱 小满 9 岁 · 昆虫化石观察员&nbsp;&nbsp;🔧 一帆 10 岁 · 会修东西的行动派&nbsp;&nbsp;📖 乐知 9 岁 · 满脑子故事</div>
+            <div class="protag-intro" id="protagIntro"></div>
           </div>
 
           <div class="card">
             <div class="card-title">🧸 讲一个什么样的故事</div>
-            <div class="card-hint">九种味道,选一个今天的心情</div>
+            <div class="card-hint">九种味道，选一个今天的心情</div>
             <div class="motif-grid" id="motifGrid"></div>
-            <div class="schedule-note" id="motifNote">选好后,这里会告诉你今天的节奏安排合不合适。</div>
+            <div class="schedule-note" id="motifNote">选好后，这里会告诉你今天的节奏安排合不合适。</div>
           </div>
 
           <div class="card">
             <div class="card-title">📍 故事发生在哪儿</div>
-            <div class="card-hint">真实世界的一个角落,当地的风物会变成故事的一部分</div>
+            <div class="card-hint">真实世界的一个角落，当地的风物会变成故事的一部分</div>
             <div class="field" style="margin-bottom:8px">
               <div style="display:flex;gap:8px">
-                <input type="text" id="inpLocation" placeholder="比如:冰岛的小渔村 / 北京胡同 / 云南外婆家" style="flex:1">
+                <input type="text" id="inpLocation" placeholder="比如：冰岛的小渔村 / 北京胡同 / 云南外婆家" style="flex:1">
                 <button class="btn sm" id="btnLoc" style="flex:none">🎲</button>
               </div>
             </div>
             <div class="field">
-              <label>💭 这个故事讲什么 <span class="f-hint">可以留空,点 ✨ 帮你想</span></label>
+              <label>💭 这个故事讲什么 <span class="f-hint">可以留空，点 ✨ 帮你想</span></label>
               <div style="display:flex;gap:8px">
-                <textarea id="inpEvent" placeholder="一句话:谁,想做什么,遇到了什么难处" style="flex:1"></textarea>
+                <textarea id="inpEvent" placeholder="一句话：谁，想做什么，遇到了什么难处" style="flex:1"></textarea>
                 <button class="btn sm" id="btnAIEvent" style="flex:none;align-self:flex-end">✨</button>
               </div>
             </div>
             <div class="toggle-card">
-              <div class="tc-body"><b>🎀 结尾彩蛋 · 长辈的小时候</b><span>故事快结束时,一位奶奶或阿姨说起自己小时候的一件事,不点破,只是悄悄呼应</span></div>
+              <div class="tc-body"><b>🎀 结尾彩蛋 · 长辈的小时候</b><span>故事快结束时，一位奶奶或阿姨说起自己小时候的一件事，不点破，只是悄悄呼应</span></div>
               <label class="switch"><input type="checkbox" id="tgLegacy"><span class="track"></span><span class="knob"></span></label>
             </div>
             <div class="field">
               <label>🍭 特别想要的元素 <span class="f-hint">可选</span></label>
-              <input type="text" id="inpSpecial" placeholder="比如:出现一只小动物">
+              <input type="text" id="inpSpecial" placeholder="比如：出现一只小动物">
             </div>
             <div class="action-bar" style="margin-top:16px">
               <button class="btn xl" id="btnRandom">🎲 帮我选</button>
               <button class="btn xl primary" id="btnGenerate" style="flex:1">✨ 开始写故事</button>
               <button class="btn xl hidden" id="btnStop">⏹</button>
             </div>
+            <div class="card-hint" style="margin:10px 0 0;text-align:center">开始写之后，右边会打开故事面板——中间的竖条可以拖动调宽度，双击竖条复位</div>
           </div>
         </div>
 
-        <div>
+        <div class="ws-divider" id="wsDivider" title="拖动调节宽度，双击复位"><span class="grip"></span></div>
+
+        <div class="ws-right" id="wsRight">
+          <button class="ws-close" id="wsCloseBtn" title="收起面板（内容不会丢）">✕</button>
           <div class="card hidden" id="resultCard"><div id="resultBody"></div></div>
           <div class="card hidden" id="streamCard">
             <div class="card-title">✍️ 正在写… <span class="mono" id="streamStat" style="font-size:12px;color:var(--ink-2);font-weight:400"></span></div>
+            <div class="think-label hidden" id="thinkLabel">💭 AI 的思考草稿（不影响正文，只是它打草稿的过程）</div>
+            <div class="think-box hidden" id="thinkBox"></div>
             <div class="stream-box" id="streamBox"></div>
             <details class="prompt-det">
-              <summary>▸ 给 AI 的完整提示词(给爱调试的你)</summary>
+              <summary>▸ 给 AI 的完整提示词（给爱调试的你）</summary>
               <pre id="promptPreview"></pre>
             </details>
-          </div>
-          <div class="card" id="idleCard">
-            <div class="empty">
-              <span class="e-emoji">🌙✨</span>
-              左边选好主角和故事味道,<br>点「开始写故事」,第一集就诞生啦。<br>
-              <span style="font-size:12px">也可以先点「🎲 帮我选」,让排班小管家替你安排。</span>
-            </div>
           </div>
         </div>
       </div>
@@ -409,12 +437,12 @@
     <div class="page-header">
       <div class="crumb">Library</div>
       <h1 class="page-title"><span class="pt-emoji">📚</span>故事库</h1>
-      <p class="page-desc">这里躺着每一集故事,从「写作中」一路长大成「可以听啦」。看文本、改字句、生成配音,都在这儿。</p>
+      <p class="page-desc">这里躺着每一集故事，从「写作中」一路长大成「可以听啦」。点「看」直接在这里翻阅，看文本、改字句、生成配音，都在这儿。</p>
     </div>
     <div class="page-body">
       <div class="card">
-        <div class="card-title">🧭 本周节奏</div>
-        <div class="card-hint">最近几集的故事味道排一排,慢故事不连着来,周中保持热闹——这是给孩子耳朵的节奏感</div>
+        <div class="card-title">🧭 故事节奏体检</div>
+        <div class="card-hint">下面是排班小管家的体检报告：它盯着最近几集的「故事味道」排布——热闹和安静要交替着来，少见的味道不扎堆，孩子才不会听腻。✅ 是达标，⚠️ 是建议调整；这只是建议，不会拦着你生成。</div>
         <div class="sched-strip" id="schedStrip"></div>
         <div id="schedRules"></div>
       </div>
@@ -437,13 +465,13 @@
     <div class="page-header">
       <div class="crumb">Radio</div>
       <h1 class="page-title"><span class="pt-emoji">📻</span>小电台</h1>
-      <p class="page-desc">睡前故事,点开就听。可以快进快退、调倍速,听完一集自动播下一集。</p>
+      <p class="page-desc">睡前故事，点开就听。可以快进快退、调倍速，听完一集自动播下一集。</p>
     </div>
     <div class="page-body">
       <div class="card">
         <div id="plEmpty" class="empty">
           <span class="e-emoji">🎧</span>
-          电台还空着。去<a href="#" data-goto="library" style="color:var(--pink-d);font-weight:600">故事库</a>把喜欢的一集变成音频,<br>或者直接用浏览器朗读先听为快。
+          电台还空着。去<a href="#" data-goto="library" style="color:var(--pink-d);font-weight:600">故事库</a>把喜欢的一集变成音频，<br>或者直接用浏览器朗读先听为快。
         </div>
         <div id="plBody" class="hidden">
           <div class="radio-stage">
@@ -503,8 +531,8 @@
     </div>
     <div class="page-body">
       <div class="card">
-        <div class="card-title">🔑 AI 钥匙(写故事用)</div>
-        <div class="card-hint">两种都能填,和 prompt-bench 一样;用中转的话把地址填进 Base URL</div>
+        <div class="card-title">🔑 AI 钥匙（写故事用）</div>
+        <div class="card-hint">两种都能填，和 prompt-bench 一样；用中转的话把地址填进 Base URL</div>
         <div class="field">
           <label>协议</label>
           <div class="seg" id="segProvider">
@@ -512,7 +540,7 @@
             <button data-p="openai">OpenAI 兼容</button>
           </div>
         </div>
-        <div class="field"><label>Base URL <span class="f-hint">填到域名或 /v1 就行;粘了带 /chat/completions 的完整地址也会自动纠正</span></label><input type="text" id="inpBase" placeholder="https://api.anthropic.com"></div>
+        <div class="field"><label>Base URL <span class="f-hint">填到域名或 /v1 就行；粘了带 /chat/completions 的完整地址也会自动纠正</span></label><input type="text" id="inpBase" placeholder="https://api.anthropic.com"></div>
         <div class="field"><label>API Key</label><input type="password" id="inpKey" placeholder="sk-…" autocomplete="off"></div>
         <div class="field">
           <label>默认模型 <span class="f-hint">下面每个小助手还可以单独换模型</span></label>
@@ -525,42 +553,43 @@
 
       <div class="card">
         <div class="card-title">🤖 三个小助手</div>
-        <div class="card-hint">策划想点子、写手写故事、审校挑毛病——各自的性格(温度)和用的模型都可以调</div>
+        <div class="card-hint">策划想点子、写手写故事、审校挑毛病——各自的性格（温度）、用的模型和提示词都可以调</div>
         <div class="agent-grid">
           <div class="agent-card a-planner">
             <div class="ag-name">✨ 策划 · 想点子</div>
-            <div class="ag-desc">根据主角、故事味道和地点,想一句「这个故事讲什么」。温度越高点子越野。</div>
-            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agPlannerModel" placeholder="(默认)"></div>
-            <div class="field"><label>脑洞大小(温度)</label>
+            <div class="ag-desc">根据主角、故事味道和地点，想一句「这个故事讲什么」。温度高点子野。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agPlannerModel" placeholder="（默认）"></div>
+            <div class="field"><label>脑洞大小（温度）</label>
               <div class="slider-row"><input type="range" id="agPlannerTemp" min="0" max="1" step="0.05" value="1"><span class="mono" id="agPlannerTempV">1.00</span></div>
             </div>
             <div class="field"><label>提示词</label><textarea id="agPlannerPrompt" spellcheck="false"></textarea></div>
           </div>
           <div class="agent-card a-writer">
             <div class="ag-name">✍️ 写手 · 写故事</div>
-            <div class="ag-desc">主角宇宙和八条铁律都在它的脑子里。温度影响文风的活泼度,一般 0.8-1.0 最舒服。</div>
-            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agWriterModel" placeholder="(默认)"></div>
+            <div class="ag-desc">世界观和三个女孩的设定在下方「故事圣经」里；这里管它的性格和输出规矩。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agWriterModel" placeholder="（默认）"></div>
             <div class="field"><label>文风温度</label>
               <div class="slider-row"><input type="range" id="agWriterTemp" min="0" max="1" step="0.05" value="1"><span class="mono" id="agWriterTempV">1.00</span></div>
             </div>
-            <div class="field"><label>最长输出(token)</label><input type="number" id="agWriterMax" min="1000" max="16000" step="500" value="6000"></div>
+            <div class="field"><label>最长输出（token）</label><input type="number" id="agWriterMax" min="1000" max="16000" step="500" value="6000"></div>
+            <div class="field"><label>输出协议提示词 <span class="f-hint">管标题/副标题/正文格式和修订规矩，每次写作拼在最后</span></label><textarea id="agWriterProtocol" spellcheck="false"></textarea></div>
           </div>
           <div class="agent-card a-judge">
             <div class="ag-name">🔎 审校 · 挑毛病</div>
-            <div class="ag-desc">只找问题不动笔,输出"过/不过+原句证据"。建议保持低温,让它一是一二是二。</div>
-            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agJudgeModel" placeholder="(默认)"></div>
+            <div class="ag-desc">只找问题不动笔，输出「过/不过＋原句证据」。建议保持低温，让它一是一二是二。</div>
+            <div class="field"><label>模型 <span class="f-hint">留空用默认</span></label><input type="text" id="agJudgeModel" placeholder="（默认）"></div>
             <div class="field"><label>严格温度</label>
               <div class="slider-row"><input type="range" id="agJudgeTemp" min="0" max="1" step="0.05" value="0"><span class="mono" id="agJudgeTempV">0.00</span></div>
             </div>
-            <div class="field"><label>提示词开头 <span class="f-hint">检查清单会自动接在后面</span></label><textarea id="agJudgePrompt" spellcheck="false"></textarea></div>
+            <div class="field"><label>提示词 <span class="f-hint">检查清单会自动接在后面</span></label><textarea id="agJudgePrompt" spellcheck="false"></textarea></div>
           </div>
         </div>
         <div class="action-bar"><button class="btn primary" id="btnSaveAgents">保存小助手设置</button></div>
       </div>
 
       <div class="card">
-        <div class="card-title">🔊 配音服务(生成音频文件用)</div>
-        <div class="card-hint">OpenAI 兼容的语音接口(如 api.openai.com 或各种中转)。不填也能听:小电台会用浏览器自带的朗读声音。</div>
+        <div class="card-title">🔊 配音服务（生成音频文件用）</div>
+        <div class="card-hint">OpenAI 兼容的语音接口（如 api.openai.com 或各种中转）。不填也能听：小电台会用浏览器自带的朗读声音。</div>
         <div class="field"><label>Base URL</label><input type="text" id="ttsBase" placeholder="https://api.openai.com/v1"></div>
         <div class="field"><label>API Key <span class="f-hint">可以和上面的不同</span></label><input type="password" id="ttsKey" placeholder="sk-…" autocomplete="off"></div>
         <div class="field inline"><label>模型</label><input type="text" id="ttsModel" placeholder="tts-1"></div>
@@ -569,8 +598,8 @@
       </div>
 
       <div class="card">
-        <div class="card-title">📜 故事圣经(写手的恒定提示词)</div>
-        <div class="card-hint">世界观、三个女孩的设定、八条铁律。每次写作都以它开头,故事类型部分由系统自动拼接。</div>
+        <div class="card-title">📜 故事圣经（写手的世界观设定）</div>
+        <div class="card-hint">世界观、三个女孩的设定、八条铁律。每次写作都以它开头，故事类型部分由系统自动拼接。</div>
         <textarea id="promptTa" style="width:100%;min-height:260px;font-family:var(--mono);font-size:11.5px;line-height:1.65;border:1.5px solid var(--line);border-radius:14px;padding:13px;background:#FFFDFA" spellcheck="false"></textarea>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
           <span class="mono" style="font-size:11px;color:var(--ink-3)" id="promptChars"></span>
@@ -584,7 +613,7 @@
         <div class="card-title" style="color:var(--bad)">🧹 大扫除</div>
         <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
           <button class="btn sm" id="btnClearEps">清空故事库</button>
-          <span style="font-size:12px;color:var(--ink-3)">删掉所有故事和音频,不可恢复,记得先「导出」</span>
+          <span style="font-size:12px;color:var(--ink-3)">删掉所有故事和音频，不可恢复，记得先「导出」</span>
         </div>
       </div>
     </div>
@@ -611,34 +640,51 @@
   </div>
 </div>
 
+<!-- 查看弹窗（故事库内直接翻阅） -->
+<div class="modal-mask hidden" id="viewModal">
+  <div class="modal view">
+    <div class="modal-head">
+      <span style="font-size:18px">📖</span>
+      <span class="mh-title" id="vmTitle"></span>
+      <span id="vmStatus"></span>
+      <button class="btn sm" id="vmClose">关闭</button>
+    </div>
+    <div class="modal-body vm-grid">
+      <div class="vm-left" id="vmLeft"></div>
+      <div class="vm-right" id="vmRight"></div>
+    </div>
+    <div class="modal-foot" id="vmFoot"></div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
 <script>
 'use strict';
 /* ============================================================
-   女孩宇宙 · 故事生产间 v3.1 (macaron)
+   小满的地图 · 故事生产间 v3.2
    三助手: 策划(想点子) · 写手(写故事) · 审校(挑毛病)
    状态机: generating → draft → approved → audio_generating → audio_ready
    ============================================================ */
 
 /* ---------- 主角 ---------- */
 const PROTAGS = [
-  { id:'小满', full:'林小满', age:9, tag:'昆虫化石观察员', trait:'好奇心满满,爱蹲下来看', emoji:'🌱', base:40, color:'mint' },
-  { id:'一帆', full:'苏一帆', age:10, tag:'会修东西的行动派', trait:'嘴硬心软,爬树第一名', emoji:'🔧', base:30, color:'peach' },
-  { id:'乐知', full:'陈乐知', age:9, tag:'满脑子故事', trait:'想太多,共情满分', emoji:'📖', base:30, color:'lilac' },
+  { id:'小满', full:'林小满', age:9, tag:'昆虫化石观察员', trait:'好奇心满满，爱蹲下来看', emoji:'🌱', base:40, color:'mint' },
+  { id:'一帆', full:'苏一帆', age:10, tag:'会修东西的行动派', trait:'嘴硬心软，爬树第一名', emoji:'🔧', base:30, color:'peach' },
+  { id:'乐知', full:'陈乐知', age:9, tag:'满脑子故事', trait:'想太多，共情满分', emoji:'📖', base:30, color:'lilac' },
 ];
 
-/* ---------- 故事味道(内部:母题;文案全部口语化) ---------- */
+/* ---------- 故事味道（内部：母题） ---------- */
 const MOTIF_FRIENDLY = {
   '解谜': { name:'小侦探', emoji:'🔍', desc:'她要搞清楚一件事' },
   '跨越': { name:'大冒险', emoji:'🏕️', desc:'她要抵达一个地方' },
   '观察': { name:'小发现', emoji:'👀', desc:'她看见别人看不见的' },
-  '守候': { name:'新朋友', emoji:'🤝', desc:'遇见,然后告别' },
+  '守候': { name:'新朋友', emoji:'🤝', desc:'遇见，然后告别' },
   '错位': { name:'走错了门', emoji:'🚪', desc:'去了一个不该去的地方' },
-  '凝视': { name:'慢慢的一天', emoji:'🍃', desc:'什么都没发生,但很满' },
-  '失去': { name:'说再见', emoji:'🌧️', desc:'失去了什么,然后接受' },
+  '凝视': { name:'慢慢的一天', emoji:'🍃', desc:'什么都没发生，但很满' },
+  '失去': { name:'说再见', emoji:'🌧️', desc:'失去了什么，然后接受' },
   '困局': { name:'两难', emoji:'⚖️', desc:'没有标准答案的选择' },
-  '荒诞': { name:'奇怪的事', emoji:'🎩', desc:'没有道理,但它发生了' },
+  '荒诞': { name:'奇怪的事', emoji:'🎩', desc:'没有道理，但它发生了' },
 };
 
 const MOTIFS = [
@@ -647,7 +693,7 @@ const MOTIFS = [
   section:`**灵魂句**:她要搞清楚一件事。\n\n**核心动机**:主角发现一个谜面,通过观察、推理、协作,解开它。\n\n**字数**:1800-2200 字\n\n**结构参考**(不强制工整):谜面出现(短、具体、有画面感)→ 第一直觉(通常是错的)→ 收集线索(2-3 个具体线索)→ 关键发现 → 验证与解谜 → 着陆(知道了答案,但答案带来新的问题)。\n\n**情感曲线**:好奇 → 困惑 → 兴奋 → 满足。**结尾基调**:满足感,但留一点余味。\n\n**母题专属自检**:\n- 谜面在开篇 200 字内出现\n- 至少有 2 个具体、可触、可量化的线索\n- 第一直觉与最终答案不一样\n- 解谜过程符合 9-10 岁孩子的能力\n- 结尾不解释"所以我们学到了…"\n\n本母题由排期系统指定,不可更换。`,
   checks:['谜面在开篇200字内出现','至少2个具体可触可量化的线索','第一直觉与最终答案不一样','解谜过程符合9-10岁孩子能力','结尾没有解释"所以我们学到了"'] },
 { id:'跨越', en:'Journey', icon:'🏕️', density:'high', wMin:2000, wMax:2400, aff:{小满:2,一帆:3,乐知:1},
-  soul:'她从一个地方,到了另一个地方。',
+  soul:'她从一个地方，到了另一个地方。',
   section:`**灵魂句**:她从一个地方,到了另一个地方。\n\n**核心动机**:主角必须完成一段物理或心理上的旅程,过程有阻碍,终点不一定是预期。\n\n**字数**:2000-2400 字\n\n**结构参考**:起点(为什么必须出发)→ 出发(第一段路是顺的)→ 第一次受阻(具体的、肉体的)→ 调整方法 → 第二次受阻(比第一次更难)→ 同伴出现/关键转机 → 抵达(但抵达的不一定是预设的终点)。\n\n**情感曲线**:决心 → 疲惫 → 沮丧 → 咬牙 → 抵达 → 安静。**结尾基调**:疲惫但自豪,不一定开心,但完整。\n\n**母题专属自检**:\n- 阻碍至少 2 个,且每个都有具体身体描写\n- 主角真的累了(描写疲劳,不只是"她坚持着")\n- 路上有"想放弃"的真实瞬间\n- 终点与起点目标不完全一致\n- 不写"她终于成功了!"式的高潮句\n\n本母题由排期系统指定,不可更换。`,
   checks:['阻碍至少2个且都有具体身体描写','主角真的累了(不只是"她坚持着")','路上有想放弃的真实瞬间','终点与起点目标不完全一致','没有"她终于成功了"式高潮句'] },
 { id:'观察', en:'Observation', icon:'👀', density:'mid', wMin:1600, wMax:2000, aff:{小满:3,一帆:1,乐知:2},
@@ -655,7 +701,7 @@ const MOTIFS = [
   section:`**灵魂句**:她看见了别人看不见的。\n\n**核心动机**:主角注意到一个所有人都忽略的细节,这个细节揭示了一件重要的事——但她不一定告诉别人,有时只是自己知道。\n\n**字数**:1600-2000 字\n\n**结构参考**:平常的场景 → 注意到一个"不对" → 继续观察(不急着行动)→ 拼出全貌 → 决定:说出来/不说出来/用别的方式回应 → 着陆(只有她知道发生了什么)。\n\n**情感曲线**:平静 → 警觉 → 专注 → 了悟 → 安静。**结尾基调**:静谧,有"只有我看见"的隐秘满足。\n\n**母题专属自检**:\n- 主角不主动出击,只是"看着"\n- 观察过程慢、细、有画面感\n- 全貌的揭示不依赖其他人告诉她\n- 主角最终的行动可以很小(一个眼神、一个动作)\n- 不需要别人也"看见",保留隐秘性\n\n本母题由排期系统指定,不可更换。`,
   checks:['主角不主动出击只是看着','观察过程慢细有画面感','全貌揭示不依赖别人告诉她','主角最终行动可以很小','保留了隐秘性(不需要别人也看见)'] },
 { id:'守候', en:'Encounter', icon:'🤝', density:'mid', wMin:1800, wMax:2200, aff:{小满:1,一帆:1,乐知:3},
-  soul:'她遇到了一个朋友,然后告别。',
+  soul:'她遇到了一个朋友，然后告别。',
   section:`**灵魂句**:她遇到了一个朋友,然后告别。\n\n**核心动机**:主角与一个临时的朋友(人、动物、甚至物件)相遇、相知,最后分别。重点不在"做了什么",在"经历了一段关系"。\n\n**字数**:1800-2200 字\n\n**结构参考**:相遇(意外的,不是预设的)→ 试探与靠近 → 共同经历一段 → 离别的预兆出现 → 真正的告别 → 着陆(留下的痕迹,可能只是一个画面、一个习惯)。\n\n**情感曲线**:好奇 → 亲近 → 信任 → 不舍 → 安静的接受。**结尾基调**:温柔的遗憾,不悲伤但也不开心。\n\n**母题专属自检**:\n- 朋友角色有清晰的"另一种世界"(不是主角的复制)\n- 告别不是"主角的失败",是必然\n- 不用煽情语言(「再也不见了」「我会想你的」)\n- 主角带走的"痕迹"是具体的(一个手势、一句话、一个东西)\n- 告别后的着陆段允许悲伤,但要平静\n\n本母题由排期系统指定,不可更换。`,
   checks:['朋友角色有清晰的另一种世界','告别是必然不是主角的失败','没有煽情语言','主角带走的痕迹是具体的','着陆段悲伤但平静'] },
 { id:'错位', en:'Displacement', icon:'🚪', density:'mid', wMin:2000, wMax:2400, aff:{小满:2,一帆:2,乐知:3},
@@ -663,7 +709,7 @@ const MOTIFS = [
   section:`**灵魂句**:她去了一个不该去的地方。\n\n**核心动机**:主角进入一个完全不同的语境(地理、文化、心理"异界"),在其中经历一些,带着轻微的改变回来。\n\n**字数**:2000-2400 字\n\n**结构参考**:起点是熟悉的 → 一个临界点(走进一扇门、上一辆陌生的车、被误认)→ 异界的特征逐步显现(细节,不解释)→ 主角试图理解/试图适应 → 异界的核心事件 → 返回起点(但不一样了)→ 着陆(没有说"她改变了",但读者感觉到了)。\n\n**情感曲线**:好奇 → 困惑 → 不安 → 适应 → 微妙的领悟。**结尾基调**:微妙、说不清,但有一种"被触动过"的痕迹。\n\n**母题专属自检**:\n- 异界的规则不要全部解释清楚\n- 主角不"征服"异界,只是"穿过"\n- 返回时不强调"她明白了什么"\n- 至少 3 个异界细节是没有被解释的(留白)\n- 着陆段不要解释主角的变化\n\n**错位的四种类型**(选其一):文化错位 / 感官错位 / 身份错位 / 时间错位。\n\n**本土场景特别规则**:当故事发生在**中国境内**时,身份错位的强度需要降低——主角被陌生人误认时,必须**至少尝试纠正一次**(哪怕小声说"我不是…"或摇头),然后才允许"算了不纠正";纠正失败的责任在配角(没听见、没在意、坚信自己没错),不在主角。示例:老奶奶叫她「糖糖」,她小声说「奶奶,我不是糖糖……」但老奶奶没听见。境外场景语言不通,身份错位可以更强。\n\n本母题由排期系统指定,不可更换。`,
   checks:['异界规则没有全部解释清楚','主角只是穿过异界而非征服','返回时不强调她明白了什么','至少3个异界细节留白未解释','着陆段没有解释主角的变化'] },
 { id:'凝视', en:'Stillness', icon:'🍃', density:'low', wMin:1400, wMax:1800, aff:{小满:2,一帆:2,乐知:2},
-  soul:'她度过了一天,什么都没发生。',
+  soul:'她度过了一天，什么都没发生。',
   section:`**灵魂句**:她度过了一天,什么都没发生。\n\n**核心动机**:主角没有任务、没有问题、没有冲突。故事是"在场"的记录,价值通过细节、感官、情绪传递。\n\n**字数**:1400-1800 字(可以更短)\n\n**结构**:不需要结构。或者说,只有"开始 → 中间 → 结束",没有起伏。\n\n**情感曲线**:平 → 平 → 平 → 一点点起伏 → 平。**结尾基调**:平静,像呼气。\n\n**母题专属自检**:\n- 没有冲突、没有问题需要解决\n- 没有反转\n- 大量感官描写(光、温度、气味、声音、触感)\n- 时间感清晰(从几点到几点)\n- 主角不需要"做"任何事,结尾就是"今天结束了"\n\n**核心区别**:凝视型 vs 观察型——观察型有"发现的瞬间",凝视型连"发现"都没有,只是"在场"。\n\n**重要提醒**:凝视型是 LLM 最不擅长的母题。写作时请反复对抗"我要让她做点什么"的本能。\n\n本母题由排期系统指定,不可更换。`,
   checks:['没有冲突没有问题需要解决','没有反转','大量感官描写','时间感清晰(从几点到几点)','主角不需要做任何事,结尾就是今天结束了'] },
 { id:'失去', en:'Loss', icon:'🌧️', density:'low', lowFreq:'每月 ≤ 2 集', wMin:1800, wMax:2200, aff:{小满:2,一帆:1,乐知:2},
@@ -693,7 +739,7 @@ const LOCATIONS = [
 /* ---------- 示例故事 ---------- */
 const SAMPLE_STORY = `林小满趴在码头边的石头上,屁股翘得老高。\n\n她的鼻子离一个小水洼只有十公分。水洼里有个东西在动。\n\n「……你是什么东西呀。」她小声问。\n\n那东西像一坨灰白色的果冻。八条小腿卷成一团。她伸出一根手指碰了碰,那东西唰地一下,颜色变成了深紫色。\n\n「哇!」小满整个人弹起来,「它生气啦!」\n\n她从口袋里掏出一个空玻璃罐——这是她出门必备装备,妈妈说她随身带罐子是「小满式怪癖」——把那一坨果冻小心翼翼舀了进去。\n\n举起来对着天空看。\n\n「你是只……章鱼?」她皱着眉,「可是章鱼不是应该在海里吗?你怎么跑到我脚边来的?」\n\n那只小章鱼把一只眼睛睁开了一条缝。\n\n黑黑的,圆圆的,像她外婆抽屉里那颗放了二十年的旧纽扣。\n\n—\n\n冰岛的七月,下午四点,海风已经冷得让人想缩脖子。\n\n小满抱着罐子往渔船那边跑。她听见有人在那边卸货。\n\n「你好!请问!」她跑得有点喘,「你们是不是把这只小东西落下来啦?」\n\n船上的人转过头。\n\n那是一个穿橙色防水裤的老奶奶,头发花白,皮肤被海风吹得红扑扑的。胸前挂着船长的徽章。\n\n「我叫希尔杜尔。」老奶奶说。「你的章鱼,从我船上掉的。」\n\n小满念了三遍才念顺。「希——尔——杜尔。」她皱着眉,「奶奶,这个名字好难。我能叫你'船长奶奶'吗?」\n\n老奶奶笑了一下,没反对。\n\n「啊!那你一定知道它从哪儿来!」\n\n船长奶奶弯下腰,看了看罐子。然后说了一句让小满愣住的话——\n\n「小朋友,今天没人打章鱼。」\n\n「啊?」\n\n「这种小章鱼,是从别的网里漏下来的。」她说,「早上有几艘船一起回来,谁的网都有可能。」\n\n小满低头看罐子。\n\n小章鱼又把眼睛闭上了。颜色变得更浅,浅得像快要消失。\n\n「……那它快不行了对不对?」\n\n船长奶奶没说话。她从口袋里掏出烟斗,但没点。她只是把烟斗咬在嘴里,看着小满。\n\n「你自己想办法。」老奶奶最后说,「你要是真的想救它,就得动脑子。」\n\n—\n\n小满抱着罐子坐在码头石阶上,双腿一晃一晃。\n\n「动脑子,动脑子……」她念叨,「我又不是它妈,我哪儿知道它喜欢什么。」\n\n她把脸贴在罐子上。小章鱼吓得颜色又变了一下。\n\n「——欸!」小满突然蹦起来,「你有反应!你能看见我!」\n\n她一拍脑门:「那我去查书不就行了吗。」\n\n—\n\n村里有个小图书馆,就一个房间,比小满家厨房大不了多少。\n\n管理员是个十六七岁的姐姐,叫比尔塔,正在用电脑剪视频。看见小满抱着罐子冲进来,把耳机拽下来。\n\n「我!需要!」小满举起罐子,「关于这种小章鱼的所有书!还有这附近海域的水温!」\n\n姐姐看了看罐子,又看了看小满。\n\n「……你不是来玩的?」\n\n「我在救命!」\n\n「图书馆姐姐」——小满当场给她起了这个绰号——笑了一下,把电脑转过来。\n\n「水温和盐度的数据,每小时更新。」她指着屏幕,「你要哪片海?」\n\n「呃……北边?」\n\n「北边哪儿?海有很多片。」\n\n小满咬住嘴唇。她想起船长奶奶说的「早上几艘船一起回来」。\n\n「那……那几艘船今天去过的所有地方,都给我看一下!」\n\n图书馆姐姐愣了一下,然后嘴角一勾:「你这小孩还挺会的。」\n\n—\n\n数据出来了。\n\n三艘船今天早上的航行轨迹在地图上画成了三条线。\n\n图书馆姐姐又翻出一本厚厚的旧书,找到那种小章鱼的页面。\n\n学名小满念不出来。但下面写着一行字:\n\n栖息地:水温 7-9 度,盐度 34 左右,喜欢躲在岩石缝里。\n\n小满把三条航行轨迹和这个数据一对——\n\n只有一艘船经过的那片海,水温是 8 度。\n\n「在这儿!」她戳着地图,「它从这儿来的!」\n\n图书馆姐姐凑过来看:「峡湾出去,往北六海里。那里有片浅滩,水下全是大石头。」\n\n小满抱起罐子就要往外冲,跑到门口又刹住车,转回来。\n\n「姐姐,」她说,「我能不能借这本书?我想再看看它喜不喜欢被人盯着看。」\n\n图书馆姐姐翻了一页,指着一行字。\n\n章鱼对强光敏感,长时间暴露会产生应激反应。\n\n小满啊地叫了一声,赶紧把外套脱下来,把玻璃罐裹得严严实实。\n\n「对不起对不起对不起。」她对着外套里的罐子说,「我不知道你怕亮。」\n\n—\n\n她又跑回码头。\n\n船长奶奶还在那儿,正在收渔网。\n\n「你查到了?」\n\n「查到了!水温 8 度的那片浅滩,离这儿六海里!」\n\n「嗯。」船长奶奶点点头。然后说,「我可以带你去。但是——」\n\n「但是什么?」\n\n「你得自己掌舵一段。」老奶奶举起自己的右手,关节肿得像几颗小核桃,「我手疼。」\n\n小满看着那只手,又看了看船舵,又看了看怀里的罐子。\n\n她吸了一口气。\n\n「好。」\n\n—\n\n船开出峡湾的时候,海雾漫上来了。\n\n雾很厚,前面什么都看不见。\n\n小满站在舵前,两只手紧紧抓着舵轮。船长奶奶站在她身后。\n\n「往左。」\n\n「再左一点。」\n\n「——慢,慢慢来,不要急。」\n\n「奶奶……」小满咬着嘴唇,「我看不见前面。」\n\n「你不需要看。」船长奶奶说,「听浪打船头的声音。声音匀,方向就对。」\n\n小满闭上眼睛,听了一会儿。\n\n砰……砰……砰……\n\n声音稳了下来。\n\n她睁开眼,发现自己的手没那么抖了。\n\n「……我好像懂了一点。」\n\n船长奶奶在她身后笑了一声。\n\n—\n\n船停在浅滩边上。\n\n小满抱着罐子蹲到船舷边。她没有马上把章鱼倒出去。\n\n她想起书上看见的话:温度差太大会让它休克。\n\n她把罐子打开一条缝,让里面的水和外面的海水慢慢混。\n\n她数到六十。一边数一边小声跟章鱼说话——\n\n「等一下你就到家啦。」\n\n「那边有大石头,可以躲。」\n\n「以后不要再被网捞起来啦,听见没有?」\n\n数到六十,她把罐子轻轻一倾。\n\n那只小灰白色的小东西,在水面上停了一秒钟。\n\n颜色慢慢变深,从灰白变成了深褐色。\n\n然后唰——八条小腿一下子张开,像一朵小小的伞,往下沉了下去。\n\n很快就看不见了。\n\n—\n\n回程的时候,海雾散了一些。\n\n小满坐在船舱里,捧着一杯船长奶奶给她的热可可。\n\n「奶奶,」她突然问,「你怎么知道我能掌舵?」\n\n船长奶奶没有马上回答。她看着前面灰蓝色的海。\n\n过了一会儿才说——\n\n「我十岁第一次掌舵。比你小一岁。」\n\n小满睁大眼睛:「那时候你怕吗?」\n\n「怕。」老奶奶说,「但是怕也得掌。」\n\n「为什么?」\n\n「因为我爸的手也疼。」\n\n小满笑了一下,又有点想哭。\n\n她不知道为什么。\n\n—\n\n天还没完全黑。\n\n云缝里露出一颗很小的星星。\n\n小满把妈妈的笔记本翻开,在最后一行用铅笔歪歪扭扭写了一句——\n\n今天,救了一只小怪物。它是紫色的,又是灰色的,又是褐色的。它现在应该到家了。\n\n写完她合上本子。\n\n热可可还剩半杯。她小口小口地喝。`;
 
-/* ---------- 恒定层与协议 ---------- */
+/* ---------- 恒定层与协议（发给 AI 的内容保持原样，不作改动） ---------- */
 const DEFAULT_CONSTANT = `你是一位为 6-13 岁中文家庭儿童创作睡前故事的资深儿童文学作者。你为一档面向中国家庭的女孩故事播客生成单集故事。
 
 这档节目的灵魂是:**不说教的女孩故事**。主角都是女孩,做着「故事里的女孩通常不做的事」——但故事不解释为什么,因为这本来就该是默认状态。
@@ -845,13 +891,13 @@ const STATUS = {
 };
 
 /* ---------- 存储 ---------- */
-const LS = { cfg:'gc.cfg', eps:'gc.episodes', prompt:'gc.prompt' };
+const LS = { cfg:'gc.cfg', eps:'gc.episodes', prompt:'gc.prompt', wsplit:'gc.wsplit' };
 const DEFAULT_CFG = { provider:'anthropic',
   anthropic:{ baseUrl:'https://api.anthropic.com', apiKey:'', model:'claude-sonnet-5' },
   openai:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'gpt-4o' },
   agents:{
     planner:{ model:'', temperature:1, prompt:DEFAULT_PLANNER_PROMPT },
-    writer:{ model:'', temperature:1, maxTokens:6000 },
+    writer:{ model:'', temperature:1, maxTokens:6000, protocol:OUTPUT_PROTOCOL },
     judge:{ model:'', temperature:0, prompt:DEFAULT_JUDGE_HEAD },
   },
   tts:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'tts-1', voice:'alloy' },
@@ -872,7 +918,6 @@ function loadAll(){
   try { episodes = JSON.parse(localStorage.getItem(LS.eps)) || []; } catch(e){ episodes = []; }
   episodes.forEach(e => { if(!e.status) e.status = 'draft'; if(!e.createdAt && e.date){ e.createdAt = e.date; } });
   promptConstant = localStorage.getItem(LS.prompt) || DEFAULT_CONSTANT;
-  // 上次会话中断的任务标记为失败
   episodes.forEach(e => { if(e.status==='generating' || e.status==='audio_generating') e.status = 'failed'; });
 }
 const saveCfg = () => localStorage.setItem(LS.cfg, JSON.stringify(cfg));
@@ -898,7 +943,7 @@ document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', 
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goPage(b.dataset.goto)));
 
 /* ============================================================
-   排班小管家(R1-R6,文案口语化)
+   排班小管家（R1-R6，文案口语化）
    ============================================================ */
 function sortedEps(){ return episodes.filter(e=>e.status!=='failed').sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); }
 function daysBetween(a,b){ return Math.abs(a-b) / 86400000; }
@@ -911,7 +956,7 @@ function motifScheduleStatus(m){
   const last = eps[eps.length-1];
   const lastM = MOTIF_BY_ID[last.motifId];
   if(lastM){
-    if(m.density==='low' && lastM.density==='low') rs.push('上一个故事也是慢节奏,今天换个热闹的吧');
+    if(m.density==='low' && lastM.density==='low') rs.push('上一个故事也是慢节奏，今天换个热闹的吧');
     if(m.id==='凝视'){
       if(eps.filter(e => e.motifId==='凝视' && sameWeek(e.createdAt, now)).length >= 1) rs.push('这周已经有一个慢故事啦');
       const lg = eps.filter(e => e.motifId==='凝视').pop();
@@ -932,25 +977,25 @@ function scheduleInfo(){
   const eps = sortedEps(); const now = Date.now(); const out = [];
   const weekEps = eps.filter(e => sameWeek(e.createdAt, now));
   const highN = weekEps.filter(e => MOTIF_BY_ID[e.motifId] && MOTIF_BY_ID[e.motifId].density==='high').length;
-  let r1 = { ok:true, note: weekEps.length < 2 ? '样本还不多' : '近几集没有慢故事扎堆' };
+  let r1 = { ok:true, note: weekEps.length < 2 ? '故事还不多，继续写就好' : '最近没有慢故事扎堆' };
   for(let i=1;i<eps.length;i++){
     const a = MOTIF_BY_ID[eps[i-1].motifId], b = MOTIF_BY_ID[eps[i].motifId];
-    if(a && b && a.density==='low' && b.density==='low'){ r1 = { ok:false, note: '「'+eps[i].title+'」和它前面一集都是慢故事' }; break; }
+    if(a && b && a.density==='low' && b.density==='low'){ r1 = { ok:false, note: '「'+eps[i].title+'」和它前面一集都是慢故事，连着听会有点闷' }; break; }
   }
-  out.push({ id:'R1', text:'慢故事不连着来', ...r1 });
-  out.push({ id:'R2', text:'每周至少 3 个热闹故事', ok: highN>=3, note:'本周 '+highN+' / 3' });
+  out.push({ text:'热闹和安静要交替（慢故事不连着来）', ...r1 });
+  out.push({ text:'每周至少 3 个热闹故事', ok: highN>=3, note:'本周 '+highN+' / 3' });
   const gz = weekEps.filter(e=>e.motifId==='凝视').length;
-  out.push({ id:'R3', text:'慢故事每周最多 1 个', ok: gz<=1, note:'本周 '+gz+' 个' });
+  out.push({ text:'慢故事每周最多 1 个', ok: gz<=1, note:'本周 '+gz+' 个' });
   const mo = eps.filter(e => sameMonth(e.createdAt, now));
-  out.push({ id:'R4', text:'少见味道有月度上限', ok: mo.filter(e=>e.motifId==='失去').length<=2 && mo.filter(e=>e.motifId==='困局').length<=1 && mo.filter(e=>e.motifId==='荒诞').length<=1, note:'本月 说再见'+mo.filter(e=>e.motifId==='失去').length+' · 两难'+mo.filter(e=>e.motifId==='困局').length+' · 奇怪的事'+mo.filter(e=>e.motifId==='荒诞').length });
+  out.push({ text:'少见的味道不扎堆（说再见 ≤ 2，两难 ≤ 1，奇怪的事 ≤ 1）', ok: mo.filter(e=>e.motifId==='失去').length<=2 && mo.filter(e=>e.motifId==='困局').length<=1 && mo.filter(e=>e.motifId==='荒诞').length<=1, note:'本月：说再见 '+mo.filter(e=>e.motifId==='失去').length+' · 两难 '+mo.filter(e=>e.motifId==='困局').length+' · 奇怪的事 '+mo.filter(e=>e.motifId==='荒诞').length });
   const lt = eps.slice(-2);
-  out.push({ id:'R5', text:'同一个女孩不当"劳模"', ok: !(lt.length===2 && lt[0].protagonists[0]===lt[1].protagonists[0]), note: lt.length ? '最近两集:'+lt.map(e=>e.protagonists[0]).join(' → ') : '—' });
+  out.push({ text:'同一个女孩不当「劳模」', ok: !(lt.length===2 && lt[0].protagonists[0]===lt[1].protagonists[0]), note: lt.length ? '最近两集：'+lt.map(e=>e.protagonists[0]).join(' → ') : '—' });
   const l3 = eps.slice(-3);
   let r6ok = true, r6note = '—';
-  if(l3.length===3 && l3.every(e=>e.locationType===l3[0].locationType)){ r6ok = false; r6note = '连续 3 集都在「'+l3[0].locationType+'」'; }
+  if(l3.length===3 && l3.every(e=>e.locationType===l3[0].locationType)){ r6ok = false; r6note = '连续 3 集都在「'+l3[0].locationType+'」，换个洲试试？'; }
   else if(lt.length===2 && lt[0].location===lt[1].location){ r6ok = false; r6note = '连续 2 集在「'+lt[1].location+'」'; }
-  else if(l3.length) r6note = '最近地点:'+l3.map(e=>(e.location||'').split(' · ')[0]).join(' / ');
-  out.push({ id:'R6', text:'别老待在同一个地方', ok: r6ok, note: r6note });
+  else if(l3.length) r6note = '最近的地点：'+l3.map(e=>(e.location||'').split(' · ')[0]).join(' / ');
+  out.push({ text:'别老待在同一个地方', ok: r6ok, note: r6note });
   return out;
 }
 const WEEKDAY_PREF = [ ['解谜'],['跨越'],['观察'],['解谜','跨越'],['守候','错位'],['凝视'],['观察','守候'] ];
@@ -983,7 +1028,7 @@ function pickLocationBySchedule(){
 }
 
 /* ============================================================
-   体检器(确定性检查)
+   体检器（确定性检查）
    ============================================================ */
 const RED_HARD = ['他妈','妈的','我靠','傻逼','白痴','混蛋','去你的','翻白眼','滚蛋'];
 const RED_SOFT = [
@@ -1015,45 +1060,45 @@ function validateStory(storyText, motif){
   { const hits = []; RED_SOFT.forEach(({w,ok}) => {
       let i = text.indexOf(w);
       while(i>=0){ if(!ok.some(k => text.slice(i, i+4).startsWith(k))) hits.push(findContext(text,i,w)); i = text.indexOf(w, i+1); } });
-    results.push({ name:'疑似粗话(需你瞄一眼)', level: hits.length ? 'warn':'pass', detail: hits }); }
+    results.push({ name:'疑似粗话（需你瞄一眼）', level: hits.length ? 'warn':'pass', detail: hits }); }
   { let t = text; BRAND_WHITE.forEach(w => { t = t.split(w).join('〇'.repeat(w.length)); });
     const hard = []; BRAND_HARD.forEach(w => { let i=t.indexOf(w); while(i>=0){ hard.push(findContext(t,i,w)); i=t.indexOf(w,i+w.length);} });
     results.push({ name:'品牌植入', level: hard.length?'fail':'pass', detail: hard });
     const soft = []; BRAND_SOFT.forEach(w => { let i=t.indexOf(w); while(i>=0){ soft.push(findContext(t,i,w)); i=t.indexOf(w,i+w.length);} });
-    results.push({ name:'疑似品牌/电子产品(需你瞄一眼)', level: soft.length?'warn':'pass', detail: soft }); }
+    results.push({ name:'疑似品牌 / 电子产品（需你瞄一眼）', level: soft.length?'warn':'pass', detail: soft }); }
   { const hits = []; LOOK_WORDS.forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
-    results.push({ name:'外貌形容(不以长相评价女孩)', level: hits.length?'warn':'pass', detail: hits }); }
+    results.push({ name:'外貌形容（不以长相评价女孩）', level: hits.length?'warn':'pass', detail: hits }); }
   { const hits = []; ['虽然她是女孩','虽然她是女生','连男孩','女孩子也','男孩都做'].forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
-    results.push({ name:'"女孩也行?"句式', level: hits.length?'fail':'pass', detail: hits }); }
+    results.push({ name:'「女孩也行？」句式', level: hits.length?'fail':'pass', detail: hits }); }
   { const sents = (text.match(/[^。！？!?…\n]+[。！？!?…]*/g) || []).map(s=>s.trim()).filter(Boolean);
     const bad = []; sents.forEach(s => {
       const core = s.replace(/[，。！？!?…—、「」《》：;；~～\s]/g,'');
       if(core.length > 35) bad.push({ level:'fail', s: s.slice(0,44)+(s.length>44?'…':'') });
-      else if(core.length > 25) bad.push({ level:'warn', s: s.slice(0,40)+(s.length>40?'…':'')+' ('+core.length+'字)' });
+      else if(core.length > 25) bad.push({ level:'warn', s: s.slice(0,40)+(s.length>40?'…':'')+'（'+core.length+' 字）' });
     });
     const f = bad.filter(b=>b.level==='fail').length, w = bad.filter(b=>b.level==='warn').length;
-    results.push({ name:'句子长度(读起来顺口)', level: f?'fail':(w>3?'warn':'pass'), detail: bad.map(b=>(b.level==='fail'?'❌ ':'⚠️ ')+b.s) }); }
+    results.push({ name:'句子长度（读起来顺口）', level: f?'fail':(w>3?'warn':'pass'), detail: bad.map(b=>(b.level==='fail'?'❌ ':'⚠️ ')+b.s) }); }
   { const hits = []; const re = /[^\n]{0,8}\d+[^\n]{0,8}/g; let m; while((m = re.exec(text))){ hits.push('…'+m[0].trim()+'…'); }
-    results.push({ name:'数字写法(念出来自然)', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
+    results.push({ name:'数字写法（念出来自然）', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
   { const n = text.replace(/\s/g,'').length;
     const { wMin, wMax } = motif || {wMin:1600, wMax:2400};
-    let level = 'pass', note = n+' 字(目标 '+wMin+'-'+wMax+')';
+    let level = 'pass', note = n+' 字（目标 '+wMin+'-'+wMax+'）';
     if(n < wMin*0.85 || n > wMax*1.15) level = 'fail';
     else if(n < wMin || n > wMax) level = 'warn';
     results.push({ name:'篇幅长短', level, detail:[note] }); }
   { const hits = []; ['手机','平板','电脑','电视','游戏'].forEach(w => { let i=text.indexOf(w); while(i>=0){ hits.push(findContext(text,i,w)); i=text.indexOf(w,i+w.length);} });
-    results.push({ name:'手机/屏幕内容(需你瞄一眼)', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
+    results.push({ name:'手机 / 屏幕内容（需你瞄一眼）', level: hits.length?'warn':'pass', detail: hits.slice(0,8) }); }
   return results;
 }
 const hasFail = rs => rs.some(r => r.level==='fail');
 function violationList(rs){
   const out = [];
-  rs.forEach(r => { if(r.level!=='pass' && r.detail && r.detail.length) out.push(r.name+':'+(typeof r.detail[0]==='string' ? r.detail.slice(0,3).join(' / ') : '句长超标若干')); });
+  rs.forEach(r => { if(r.level!=='pass' && r.detail && r.detail.length) out.push(r.name+'：'+(typeof r.detail[0]==='string' ? r.detail.slice(0,3).join(' / ') : '句长超标若干')); });
   return out;
 }
 
 /* ============================================================
-   AI 调用(双协议,支持按助手覆盖参数)
+   AI 调用（双协议 + 看门狗 + 思考流）
    ============================================================ */
 function apiReady(){ const c = cfg.provider==='anthropic' ? cfg.anthropic : cfg.openai; return !!(c.apiKey && c.apiKey.trim()); }
 function ttsReady(){ return !!(cfg.tts.apiKey && cfg.tts.apiKey.trim()); }
@@ -1063,8 +1108,9 @@ function updateApiDot(){
   $('apiStatusText').textContent = on ? 'AI 已就绪 🎉' : 'AI 钥匙未填';
   $('noKeyBanner').classList.toggle('hidden', on);
 }
-function agentOpts(which, base){
+function agentOpts(which){
   const a = cfg.agents[which];
+  const base = cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model;
   return {
     model: (a.model && a.model.trim()) || base,
     temperature: typeof a.temperature === 'number' ? a.temperature : 1,
@@ -1096,45 +1142,46 @@ async function apiStream(system, user, onDelta, signal, opts){
   let timedOut = false; const lastAct = { t: Date.now() };
   const wd = setInterval(() => { if(Date.now() - lastAct.t > 90000){ timedOut = true; lc.abort(); } }, 5000);
   const emit = t => { lastAct.t = Date.now(); onDelta(t); };
+  const think = t => { lastAct.t = Date.now(); if(opts.onThink) opts.onThink(t); };
   try{
     const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body), signal: lc.signal });
     if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
     const ctype = (res.headers.get('content-type')||'').toLowerCase();
     if(ctype.includes('json')){
-      /* 有些中转会忽略 stream 参数,整段 JSON 返回——照常处理 */
       const j = await res.json();
       const txt = isA ? ((j.content||[]).map(c=>c.text||'').join('')) : ((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'');
       if(txt) emit(txt);
       return;
     }
     const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
-  while(true){
-    const {done, value} = await reader.read(); if(done) break;
-    buf += dec.decode(value, {stream:true});
-    let nl;
-    while((nl = buf.indexOf('\n')) >= 0){
-      const line = buf.slice(0,nl).trim(); buf = buf.slice(nl+1);
-      if(!line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if(data === '[DONE]') continue;
-      try{
-        const j = JSON.parse(data);
-        if(isA){
-          if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') emit(j.delta.text);
-          else if(j.type==='content_block_delta' && j.delta && typeof j.delta.thinking==='string' && j.delta.thinking){ lastAct.t = Date.now(); if(opts.onThink) opts.onThink(j.delta.thinking); }
-        }
-        else { const d = j.choices && j.choices[0] && j.choices[0].delta;
-          if(d){
-            if(typeof d.content==='string' && d.content) emit(d.content);
-            else { const rc = d.reasoning_content || d.reasoning; if(typeof rc==='string' && rc){ lastAct.t = Date.now(); if(opts.onThink) opts.onThink(rc); } }
-          } }
-      }catch(e){}
+    while(true){
+      const {done, value} = await reader.read(); if(done) break;
+      lastAct.t = Date.now();
+      buf += dec.decode(value, {stream:true});
+      let nl;
+      while((nl = buf.indexOf('\n')) >= 0){
+        const line = buf.slice(0,nl).trim(); buf = buf.slice(nl+1);
+        if(!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if(data === '[DONE]') continue;
+        try{
+          const j = JSON.parse(data);
+          if(isA){
+            if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') emit(j.delta.text);
+            else if(j.type==='content_block_delta' && j.delta && typeof j.delta.thinking==='string' && j.delta.thinking) think(j.delta.thinking);
+          }
+          else { const d = j.choices && j.choices[0] && j.choices[0].delta;
+            if(d){
+              if(typeof d.content==='string' && d.content) emit(d.content);
+              else { const rc = d.reasoning_content || d.reasoning; if(typeof rc==='string' && rc) think(rc); }
+            } }
+        }catch(e){}
+      }
     }
-  }
   }catch(e){
-    if(timedOut) throw new Error('90 秒没有收到新内容,已自动停止。常见原因:中转服务卡住、不支持流式输出、或网络不通。可在设置里点「测试连接」排查');
+    if(timedOut) throw new Error('90 秒没有收到新内容，已自动停止。常见原因：中转服务卡住、不支持流式输出、或网络不通。可在设置里点「测试连接」排查');
     if(e.name === 'AbortError' && signal && signal.aborted) throw e;
-    if(e.name === 'AbortError') throw new Error('请求被中断,请重试');
+    if(e.name === 'AbortError') throw new Error('请求被中断，请重试');
     throw e;
   }finally{
     clearInterval(wd);
@@ -1163,14 +1210,57 @@ async function apiOnce(system, user, opts){
   const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body) });
   if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
   const j = await res.json();
+  if(opts.collect) opts.collect.j = j;
   return isA ? ((j.content && j.content.map(c=>c.text||'').join('')) || '') : ((j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '');
 }
 
 /* ============================================================
-   创意工坊
+   创意工坊：左右分栏（可拖动）
    ============================================================ */
 let selProtags = [];
 let selMotif = null;
+let wsOpenState = false;
+
+function wsApplyWidth(pct){
+  pct = Math.min(72, Math.max(24, pct));
+  $('wsWrap').style.setProperty('--ws-left', pct+'%');
+  $('wsWrap').style.setProperty('--ws-right', (100-pct)+'%');
+  try{ localStorage.setItem(LS.wsplit, String(Math.round(pct))); }catch(e){}
+}
+function wsOpen(){
+  if(wsOpenState) return;
+  wsOpenState = true;
+  $('wsWrap').classList.add('open');
+  let saved = parseFloat(localStorage.getItem(LS.wsplit));
+  wsApplyWidth(isFinite(saved) ? saved : 44);
+}
+function wsClose(){
+  wsOpenState = false;
+  $('wsWrap').classList.remove('open');
+  $('wsWrap').style.removeProperty('--ws-left');
+  $('wsWrap').style.removeProperty('--ws-right');
+}
+$('wsCloseBtn').addEventListener('click', wsClose);
+(function initDivider(){
+  const div = $('wsDivider'), wrap = $('wsWrap');
+  let dragging = false;
+  div.addEventListener('mousedown', e => { dragging = true; div.classList.add('dragging'); e.preventDefault(); });
+  window.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const r = wrap.getBoundingClientRect();
+    const pct = (e.clientX - r.left) / r.width * 100;
+    wsApplyWidth(pct);
+  });
+  window.addEventListener('mouseup', () => { if(dragging){ dragging = false; div.classList.remove('dragging'); } });
+  div.addEventListener('dblclick', () => { localStorage.removeItem(LS.wsplit); wsApplyWidth(44); toast('宽度已复位'); });
+  div.addEventListener('touchstart', e => { dragging = true; div.classList.add('dragging'); }, {passive:true});
+  window.addEventListener('touchmove', e => {
+    if(!dragging || !e.touches[0]) return;
+    const r = wrap.getBoundingClientRect();
+    wsApplyWidth((e.touches[0].clientX - r.left) / r.width * 100);
+  }, {passive:true});
+  window.addEventListener('touchend', () => { if(dragging){ dragging = false; div.classList.remove('dragging'); } });
+})();
 
 function renderProtags(){
   $('protagRow').innerHTML = PROTAGS.map((p, pi) => {
@@ -1178,7 +1268,7 @@ function renderProtags(){
     const cls = i>=0 ? ' sel-p'+pi : '';
     return '<button class="protag-card'+cls+'" data-p="'+p.id+'">'+
       (i===0?'<span class="protag-ord">⭐ 主角</span>': i>0?'<span class="protag-ord">一起来玩</span>':'')+
-      '<div class="protag-emoji">'+p.emoji+'</div><div class="protag-name">'+p.id+'</div><div class="protag-tag">'+p.tag+'<br>'+p.trait+'</div></button>';
+      '<div class="protag-emoji">'+p.emoji+'</div><div class="protag-name">'+p.id+'</div><div class="protag-tag">'+p.tag+'</div></button>';
   }).join('');
   document.querySelectorAll('.protag-card').forEach(c => c.addEventListener('click', () => {
     const id = c.dataset.p;
@@ -1186,26 +1276,28 @@ function renderProtags(){
     if(i>=0) selProtags.splice(i,1); else selProtags.push(id);
     renderProtags();
   }));
+  $('protagIntro').innerHTML = PROTAGS.map(p =>
+    '<div>'+p.emoji+' <b>'+p.full+'</b> '+p.age+' 岁 · '+p.tag+'——'+p.trait+'</div>').join('');
 }
 function renderMotifGrid(){
   $('motifGrid').innerHTML = MOTIFS.map(m => {
     const f = MOTIF_FRIENDLY[m.id];
     const st = motifScheduleStatus(m);
-    return '<button class="motif-chip'+(selMotif===m.id?' sel':'')+(st.ok?'':' blocked')+'" data-m="'+m.id+'" data-block="'+(st.ok?'':'!')+'" title="'+esc(st.reasons.join(';'))+'">'+
+    return '<button class="motif-chip'+(selMotif===m.id?' sel':'')+(st.ok?'':' blocked')+'" data-m="'+m.id+'" data-block="'+(st.ok?'':'!')+'" title="'+esc(st.reasons.join('；'))+'">'+
       '<div class="motif-emoji">'+f.emoji+'</div><div class="motif-name">'+f.name+'</div><div class="motif-desc">'+f.desc+'</div></button>';
   }).join('');
   document.querySelectorAll('.motif-chip').forEach(c => c.addEventListener('click', () => { selMotif = c.dataset.m; renderMotifGrid(); renderMotifNote(); }));
 }
 function renderMotifNote(){
   const m = MOTIF_BY_ID[selMotif];
-  if(!m){ $('motifNote').textContent = '选好后,这里会告诉你今天的节奏安排合不合适。'; return; }
+  if(!m){ $('motifNote').textContent = '选好后，这里会告诉你今天的节奏安排合不合适。'; return; }
   const f = MOTIF_FRIENDLY[m.id];
   const st = motifScheduleStatus(m);
   const aff = PROTAGS.map(p => p.emoji+p.id+' '+'⭐'.repeat(m.aff[p.id])).join(' · ');
-  let html = '<b>'+f.emoji+' '+f.name+'</b> · '+esc(m.soul)+'<br><span style="font-size:11.5px;color:var(--ink-3)">和谁最搭:'+aff+'</span>';
+  let html = '<b>'+f.emoji+' '+f.name+'</b> · '+esc(m.soul)+'<br><span style="font-size:11.5px;color:var(--ink-3)">和谁最搭：'+aff+'</span>';
   if(st.ok) html += '<br><span style="color:var(--mint-d)">✓ 今天的节奏正合适</span>';
-  else html += '<br><span style="color:var(--bad)">⚠ '+esc(st.reasons.join(';'))+' —— 硬要用也可以(你说了算)</span>';
-  if(m.lowFreq) html += '<br><span style="font-size:11.5px;color:var(--ink-3)">这个味道要省着用:'+m.lowFreq+'</span>';
+  else html += '<br><span style="color:var(--bad)">⚠ '+esc(st.reasons.join('；'))+' —— 硬要用也可以（你说了算）</span>';
+  if(m.lowFreq) html += '<br><span style="font-size:11.5px;color:var(--ink-3)">这个味道要省着用：'+m.lowFreq+'</span>';
   $('motifNote').innerHTML = html;
 }
 function collectParams(){
@@ -1229,7 +1321,7 @@ function assembleSystem(p){
   const m = MOTIF_BY_ID[p.motifId];
   let s = promptConstant + '\n\n# 本集故事类型 · ' + m.id + '型(' + m.en + ')\n\n' + m.section;
   if(p.legacy) s += '\n\n' + LEGACY_MODULE;
-  s += '\n\n' + OUTPUT_PROTOCOL;
+  s += '\n\n' + (cfg.agents.writer.protocol || OUTPUT_PROTOCOL);
   return s;
 }
 function assembleUser(p){
@@ -1250,20 +1342,24 @@ let curEpId = null;
 function setBusy(b){
   $('btnGenerate').disabled = b; $('btnRandom').disabled = b;
   $('btnStop').classList.toggle('hidden', !b);
+  $('genRow').classList.toggle('hidden', !b);
 }
 function showStream(sys, usr){
+  wsOpen();
   $('streamCard').classList.remove('hidden');
-  $('idleCard').classList.add('hidden');
   $('resultCard').classList.add('hidden');
   $('streamBox').textContent = '';
   $('promptPreview').textContent = '===== SYSTEM =====\n' + sys + '\n\n===== USER =====\n' + usr;
+  $('thinkLabel').classList.add('hidden');
+  $('thinkBox').classList.add('hidden');
+  $('thinkBox').textContent = '';
 }
 function makeEpisode(p){
   const ep = { id:'ep'+Date.now()+Math.floor(Math.random()*999), createdAt: Date.now(),
-    title:'(写作中…)', subtitle:'', culture:'', text:'', wordCount:0,
+    title:'（写作中…）', subtitle:'', culture:'', text:'', wordCount:0,
     motifId: p.motifId, protagonists: p.protagonists.slice(), location: p.location, locationType: p.locationType,
     legacy: p.legacy, special: p.special, event: p.event, nicknames: [],
-    status:'generating', raw:'', revisions:0, checks:null, judge:null, audio:null };
+    status:'generating', raw:'', revisions:0, checks:null, judge:null, audio:null, statusNote:'' };
   episodes.push(ep); saveEps(); renderLibraryIfVisible();
   return ep;
 }
@@ -1272,25 +1368,25 @@ async function generate(){
   const p = collectParams();
   if(!p.protagonists.length) return toast('先选一个主角呀','warn');
   if(!p.motifId) return toast('挑一个故事味道','warn');
-  if(!p.location) return toast('地点还空着,点 🎲 换一个','warn');
+  if(!p.location) return toast('地点还空着，点 🎲 换一个','warn');
   const reuse = curEpId ? episodes.find(e=>e.id===curEpId && e.status==='failed') : null;
   const ep = reuse || makeEpisode(p);
-  if(reuse){ Object.assign(ep, { status:'generating', title:'(写作中…)', revisions: ep.revisions }); saveEps(); }
+  if(reuse){ Object.assign(ep, { status:'generating', title:'（写作中…）', statusNote:'', revisions: ep.revisions }); saveEps(); }
   curEpId = ep.id;
   const sys = assembleSystem(p), usr = assembleUser(p);
   showStream(sys, usr);
   setBusy(true); genCtl = new AbortController();
   let raw = '';
   try{
-    const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    const opts = agentOpts('writer');
     const t0 = Date.now(); let lastSave = 0; let thinkLen = 0;
     const updStat = () => {
       const secs = Math.round((Date.now()-t0)/1000);
       let line, note;
       if(raw){ line = '已用时 '+secs+' 秒 · 已收到 '+raw.length+' 字'; note = '写作中 · 已收到 '+raw.length+' 字'; }
-      else if(thinkLen){ line = '已用时 '+secs+' 秒 · AI 正在打草稿 '+thinkLen+' 字,正文还没开始'; note = '写作中 · AI 打草稿 '+thinkLen+' 字'; }
-      else { line = '已用时 '+secs+' 秒 · 还在等第一个字(90 秒没动静会自动报错)'; note = '写作中 · 等待回应 '+secs+' 秒'; }
-      $('streamStat').textContent = line;
+      else if(thinkLen){ line = '已用时 '+secs+' 秒 · AI 正在打草稿 '+thinkLen+' 字，正文还没开始'; note = '写作中 · AI 打草稿 '+thinkLen+' 字'; }
+      else { line = '已用时 '+secs+' 秒 · 还在等第一个字（90 秒没动静会自动报错）'; note = '写作中 · 等待回应 '+secs+' 秒'; }
+      const s = $('streamStat'); if(s) s.textContent = line;
       ep.statusNote = note;
       const now = Date.now();
       if(now - lastSave > 2500){ lastSave = now; saveEps(); renderLibraryIfVisible(); }
@@ -1299,23 +1395,27 @@ async function generate(){
     await apiStream(sys, usr, t => {
       raw += t;
       const box = $('streamBox'); box.textContent = raw; box.scrollTop = box.scrollHeight;
-    }, genCtl.signal, { ...opts, onThink: t => { thinkLen += t.length; } });
-    if(!raw.trim()) throw new Error('AI 没有返回内容(接口通了但返回空——多半是模型名填错,或这个模型不支持该调用方式)');
+    }, genCtl.signal, { ...opts, onThink: t => {
+      thinkLen += t.length;
+      const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
+      tb.textContent += t; tb.scrollTop = tb.scrollHeight;
+    } });
+    if(!raw.trim()) throw new Error('AI 没有返回内容（接口通了但返回空——多半是模型名填错，或这个模型不支持该调用方式）');
     Object.assign(ep, { raw, status:'draft', statusNote:'' });
     applyParsed(ep);
-    toast('写好啦,快看看 ✨');
+    toast('写好啦，快看看 ✨');
     handleResult(ep);
   }catch(e){
     ep.status = 'failed'; ep.statusNote = ''; saveEps();
-    if(e.name === 'AbortError') toast('停下来了,可以点「再试一次」','warn');
-    else { toast('写作失败:'+e.message,'err'); $('idleCard').classList.remove('hidden'); $('streamCard').classList.add('hidden'); }
+    if(e.name === 'AbortError') toast('停下来了，可以点「再试一次」','warn');
+    else { toast('写作失败：'+e.message,'err'); $('streamCard').classList.add('hidden'); if(!curEpId || !episodes.find(x=>x.id===curEpId && x.raw)) $('resultCard').classList.add('hidden'); }
   }finally{ if(genTick){ clearInterval(genTick); genTick = null; } setBusy(false); genCtl = null; renderLibraryIfVisible(); }
 }
 function applyParsed(ep){
   const rx = /##\s*标题\s*\n+([\s\S]*?)\n+##\s*副标题\s*\n+([\s\S]*?)\n+##\s*文化背景[^\n]*\n+([\s\S]*?)\n+##\s*(?:故事)?正文\s*\n+([\s\S]*)/;
   const mR = ep.raw.match(rx);
   if(mR){ ep.title = mR[1].trim(); ep.subtitle = mR[2].trim(); ep.culture = mR[3].trim(); ep.text = mR[4].trim(); }
-  else { ep.title = ep.title==='(写作中…)' ? '(没认出标题)' : ep.title; ep.text = ep.raw.trim(); }
+  else { ep.title = ep.title==='（写作中…）' ? '（没认出标题）' : ep.title; ep.text = ep.raw.trim(); }
   ep.wordCount = ep.text.replace(/\s/g,'').length;
   ep.nicknames = extractNicknames(ep.text);
   ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
@@ -1330,8 +1430,7 @@ function extractNicknames(text){
 async function rewrite(ep, extraNote){
   if(!ep) return;
   const vios = ep.checks ? violationList(ep.checks) : [];
-  if(!vios.length && !extraNote){ return toast('体检没有硬问题。想改的话,点「补充修改」写想改什么','warn'); }
-  const m = MOTIF_BY_ID[ep.motifId];
+  if(!vios.length && !extraNote){ return toast('体检没有硬问题。想改的话，点「补充修改」写想改什么','warn'); }
   const usr = '【修订指令】\n外部校验器发现以下问题,请按修订协议修复(只修所列问题,输出完整四部分):\n' +
     (vios.length ? vios.map((v,i)=>(i+1)+'. '+v).join('\n') : '') +
     (extraNote ? '\n人工补充:\n'+extraNote : '') +
@@ -1340,17 +1439,21 @@ async function rewrite(ep, extraNote){
   setBusy(true); genCtl = new AbortController();
   let raw = '';
   try{
-    const opts = agentOpts('writer', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    const opts = agentOpts('writer');
     const t0 = Date.now(); let thinkLen = 0;
-    const updStat = () => { const secs = Math.round((Date.now()-t0)/1000); $('streamStat').textContent = raw ? ('已用时 '+secs+' 秒 · 已收到 '+raw.length+' 字') : (thinkLen ? ('已用时 '+secs+' 秒 · AI 正在打草稿 '+thinkLen+' 字') : ('已用时 '+secs+' 秒 · 还在等第一个字…')); };
+    const updStat = () => { const secs = Math.round((Date.now()-t0)/1000); const s = $('streamStat'); if(s) s.textContent = raw ? ('已用时 '+secs+' 秒 · 已收到 '+raw.length+' 字') : (thinkLen ? ('已用时 '+secs+' 秒 · AI 正在打草稿 '+thinkLen+' 字') : ('已用时 '+secs+' 秒 · 还在等第一个字…')); };
     genTick = setInterval(updStat, 1000); updStat();
-    await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; }, genCtl.signal, { ...opts, onThink: t => { thinkLen += t.length; } });
+    await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; }, genCtl.signal, { ...opts, onThink: t => {
+      thinkLen += t.length;
+      const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
+      tb.textContent += t; tb.scrollTop = tb.scrollHeight;
+    } });
     ep.raw = raw; ep.revisions = (ep.revisions||0)+1;
     applyParsed(ep);
     handleResult(ep);
-    toast('改好了,再体检一下');
+    toast('改好了，再体检一下');
   }catch(e){
-    if(e.name==='AbortError') toast('已停止','warn'); else toast('修订失败:'+e.message,'err');
+    if(e.name==='AbortError') toast('已停止','warn'); else toast('修订失败：'+e.message,'err');
   }finally{ if(genTick){ clearInterval(genTick); genTick=null; } setBusy(false); genCtl=null; renderLibraryIfVisible(); }
 }
 function paramsOf(ep){
@@ -1364,13 +1467,13 @@ async function runJudge(ep){
   const btn = $('btnJudge'); if(btn) btn.disabled = true;
   toast('审校小助手正在细读…');
   try{
-    const opts = agentOpts('judge', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
+    const opts = agentOpts('judge');
     let out = await apiOnce(sys, '【故事】\n'+ep.text, opts);
     out = out.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
     const s = out.indexOf('['), e2 = out.lastIndexOf(']');
     ep.judge = JSON.parse(out.slice(s, e2+1)); saveEps();
     handleResult(ep, true);
-  }catch(e){ toast('审校失败:'+(e.message||e),'err'); }
+  }catch(e){ toast('审校失败：'+(e.message||e),'err'); }
   finally{ if(btn) btn.disabled = false; }
 }
 
@@ -1383,16 +1486,18 @@ function renderChecklist(rs){
     (r.level!=='pass' && r.detail && r.detail.length ? r.detail.slice(0,6).map(d=>'<span class="ev">'+esc(String(d))+'</span>').join('') : '') +
     '</span></div>').join('') + '</div>';
 }
-function handleResult(ep, keepJudge){
+function storyHtml(text){
+  return esc(text.replace(/\*\*/g,'')).split(/\n/).map(line =>
+    line.trim()==='—' ? '<span class="sep">— — —</span>' : (line.trim() ? line : '')
+  ).join('\n');
+}
+function handleResult(ep){
   curEpId = ep.id;
   const m = MOTIF_BY_ID[ep.motifId], f = MOTIF_FRIENDLY[ep.motifId];
   const rs = ep.checks || [];
+  wsOpen();
   $('streamCard').classList.add('hidden');
-  $('idleCard').classList.add('hidden');
   $('resultCard').classList.remove('hidden');
-  const storyHtml = esc(ep.text.replace(/\*\*/g,'')).split(/\n/).map(line =>
-    line.trim()==='—' ? '<span class="sep">— — —</span>' : (line.trim() ? line : '')
-  ).join('\n');
   const st = STATUS[ep.status] || STATUS.draft;
   $('resultBody').innerHTML =
     '<div class="result-head"><div class="result-title">'+esc(ep.title)+'</div>' +
@@ -1404,19 +1509,19 @@ function handleResult(ep, keepJudge){
     '<span class="pill" style="background:var(--bg-2)">'+esc(ep.location)+'</span>' +
     '<span class="pill mono" style="background:var(--bg-2)">'+ep.wordCount+' 字</span>' +
     (ep.revisions ? '<span class="pill" style="background:var(--lemon)">改过 '+ep.revisions+' 次</span>' : '') + '</div></div>' +
-    '<div class="story-text">'+storyHtml+'</div>' +
-    '<div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px"><div class="card-title" style="font-size:15px">🩺 自动体检</div><div class="card-hint">✗ 的问题可以一键让写手改;⚠ 的是拿不准的,请你瞄一眼</div>' + renderChecklist(rs) + '</div>' +
+    '<div class="story-text">'+storyHtml(ep.text)+'</div>' +
+    '<div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px"><div class="card-title" style="font-size:15px">🩺 自动体检</div><div class="card-hint">✗ 的问题可以一键让写手改；⚠ 的是拿不准的，请你瞄一眼</div>' + renderChecklist(rs) + '</div>' +
     (ep.judge ? '<div style="margin-top:14px"><div class="card-title" style="font-size:15px">🔎 审校小助手的意见</div><div style="margin-top:8px">' + renderChecklist(ep.judge.map(j=>({name:j.name, level:j.pass?'pass':'fail', detail: j.pass?[]:[j.evidence||'']}))) + '</div></div>' : '') +
     '<div class="action-bar">' +
-    (ep.status==='draft' ? '<button class="btn mint xl" id="btnApprove">✅ 看过了,通过</button>' : '') +
+    (ep.status==='draft' ? '<button class="btn mint xl" id="btnApprove">✅ 看过了，通过</button>' : '') +
     (hasFail(rs) ? '<button class="btn primary xl" id="btnFix">🔧 让写手改</button>' : '<button class="btn xl" id="btnFix">🔧 补充修改</button>') +
     '<button class="btn xl" id="btnJudge">🔎 找找问题</button>' +
     '<button class="btn lilac xl" id="btnListen">📻 去听听</button>' +
     '<button class="btn xl ghost" id="btnRegen" style="border-style:dashed">🎲 重新写</button>' +
     '</div>';
-  const ap = $('btnApprove'); if(ap) ap.onclick = () => { ep.status='approved'; saveEps(); toast('通过!可以去故事库生成配音啦 🎉'); handleResult(ep); renderLibraryIfVisible(); };
+  const ap = $('btnApprove'); if(ap) ap.onclick = () => { ep.status='approved'; saveEps(); toast('通过！可以去故事库生成配音啦 🎉'); handleResult(ep); renderLibraryIfVisible(); };
   $('btnFix').onclick = () => {
-    if(!hasFail(rs)){ const note = prompt('想让写手改什么?(留空取消)'); if(!note) return; rewrite(ep, note); }
+    if(!hasFail(rs)){ const note = prompt('想让写手改什么？（留空取消）'); if(!note) return; rewrite(ep, note); }
     else rewrite(ep, '');
   };
   $('btnJudge').onclick = () => runJudge(ep);
@@ -1434,7 +1539,7 @@ $('btnRandom').addEventListener('click', () => {
   $('tgLegacy').checked = ['跨越','观察','守候','错位','失去'].includes(m.id) && Math.random() < .35;
   renderProtags(); renderMotifGrid(); renderMotifNote();
   const st = motifScheduleStatus(m);
-  toast('排班小管家安排:'+MOTIF_FRIENDLY[m.id].emoji+' '+MOTIF_FRIENDLY[m.id].name+' · '+selProtags[0]+' 出场'+(st.ok?'':'(注意:这个味道今天有点挤)'));
+  toast('排班小管家安排：'+MOTIF_FRIENDLY[m.id].emoji+' '+MOTIF_FRIENDLY[m.id].name+' · '+selProtags[0]+' 出场'+(st.ok?'':'（注意：这个味道今天有点挤）'));
 });
 $('btnLoc').addEventListener('click', () => {
   const cur = $('inpLocation').value;
@@ -1452,24 +1557,24 @@ $('btnAIEvent').addEventListener('click', async () => {
   try{
     const sys = cfg.agents.planner.prompt || DEFAULT_PLANNER_PROMPT;
     const usr = '故事类型:'+MOTIF_FRIENDLY[p.motifId].name+'('+MOTIF_BY_ID[p.motifId].soul+')\n主角:'+p.protagonists.join('、')+'\n地点:'+p.location+'\n特别想要的元素:'+(p.special||'无');
-    const opts = agentOpts('planner', cfg.provider==='anthropic'?cfg.anthropic.model:cfg.openai.model);
-    const out = await apiOnce(sys, usr, { ...opts, maxTokens: 300 });
+    const opts = agentOpts('planner');
+    const out = await apiOnce(sys, usr, { ...opts, maxTokens: 600 });
     $('inpEvent').value = out.trim().split('\n')[0].slice(0,60);
-  }catch(e){ toast('没想出来:'+e.message,'err'); }
+  }catch(e){ toast('没想出来：'+e.message,'err'); }
   finally{ btn.disabled = false; btn.textContent = '✨'; }
 });
 $('btnSample').addEventListener('click', () => {
   const ep = { id:'ep'+Date.now(), createdAt: Date.now(),
-    title:'海雾里的小怪物', subtitle:'一只变色的章鱼,一整片看不清的海', culture:'冰岛西峡湾的渔村,夏天的海雾说来就来,渔民们靠听浪辨方向。',
+    title:'海雾里的小怪物', subtitle:'一只变色的章鱼，一整片看不清的海', culture:'冰岛西峡湾的渔村，夏天的海雾说来就来，渔民们靠听浪辨方向。',
     text: SAMPLE_STORY, wordCount: SAMPLE_STORY.replace(/\s/g,'').length,
     motifId:'解谜', protagonists:['小满'], location:'冰岛 · 西峡湾', locationType:'海外',
     legacy:true, special:'', event:'', nicknames:['船长奶奶','图书馆姐姐'],
-    status:'draft', raw:'', revisions:0, checks:null, judge:null, audio:null };
+    status:'draft', raw:'', revisions:0, checks:null, judge:null, audio:null, statusNote:'' };
   ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
   episodes.push(ep); saveEps();
   curEpId = ep.id;
   handleResult(ep);
-  toast('这是示例故事(v1 的种子样本)。体检会指出它的旧格式小毛病——正好看看体检器怎么干活');
+  toast('这是示例故事（v1 的种子样本）。体检会指出它的旧格式小毛病——正好看看体检器怎么干活');
 });
 $('btnGenerate').addEventListener('click', generate);
 $('btnStop').addEventListener('click', () => { if(genCtl) genCtl.abort(); });
@@ -1482,22 +1587,19 @@ function renderLibraryIfVisible(){ const p = document.querySelector('.page[data-
 function coverBg(m){ return m.density==='high' ? 'linear-gradient(135deg,var(--pink),#F9C6B4)' : m.density==='mid' ? 'linear-gradient(135deg,var(--mint),#D8F2E4)' : 'linear-gradient(135deg,var(--sky),#E2EEFB)'; }
 function renderLibrary(){
   const eps = sortedEps();
-  /* 本周节奏 */
   const recent = eps.slice(-7);
   $('schedStrip').innerHTML = recent.length ? recent.map(e => {
     const m = MOTIF_BY_ID[e.motifId]; const f = MOTIF_FRIENDLY[e.motifId];
     return '<div class="sched-cell" style="background:'+coverBg(m||{density:'mid'})+'"><div class="sc-date">'+fmtDate(e.createdAt)+'</div><div class="sc-name">'+(f?f.emoji:'·')+' '+(f?f.name:e.motifId)+'</div><div style="font-size:10.5px;opacity:.8">'+esc(e.protagonists[0])+' · '+esc((e.location||'').split(' · ')[0])+'</div></div>';
-  }).join('') : '<div class="empty" style="padding:8px 0">还没有故事。写好第一集,这里就会长出节奏条。</div>';
+  }).join('') : '<div class="empty" style="padding:8px 0">还没有故事。写好第一集，这里就会长出节奏条。</div>';
   $('schedRules').innerHTML = scheduleInfo().map(r =>
-    '<div class="rule-row"><span class="rule-id">'+r.id+'</span><span>'+(r.ok?'✅':'⚠️')+' '+r.text+' <span style="color:var(--ink-3)">— '+esc(r.note)+'</span></span></div>').join('');
-  /* 筛选 */
+    '<div class="rule-row"><span>'+(r.ok?'✅':'⚠️')+' '+r.text+' <span style="color:var(--ink-3)">—— '+esc(r.note)+'</span></span></div>').join('');
   const counts = { all: eps.length };
   Object.keys(STATUS).forEach(k => counts[k] = eps.filter(e=>e.status===k).length);
   const filters = [['all','全部'],['draft','写好了'],['approved','已通过'],['audio_ready','可以听'],['generating','写作中'],['failed','出错了']];
   $('filterRow').innerHTML = filters.map(([k,l]) =>
     '<button class="filter-chip'+(libFilter===k?' on':'')+'" data-f="'+k+'">'+l+(counts[k]?' '+counts[k]:'')+'</button>').join('');
   $('filterRow').querySelectorAll('.filter-chip').forEach(b => b.addEventListener('click', () => { libFilter = b.dataset.f; renderLibrary(); }));
-  /* 列表 */
   let list = eps.slice().reverse();
   if(libFilter !== 'all') list = list.filter(e => e.status === libFilter);
   $('epList').innerHTML = list.length ? list.map(e => {
@@ -1518,28 +1620,77 @@ function renderLibrary(){
       '<div class="ep-main"><div class="ep-title">'+esc(e.title)+' <span class="status-pill '+st.cls+'"><span class="sp-dot"></span>'+st.emoji+' '+st.label+'</span></div>' +
       '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span>'+(e.statusNote?'<span style="color:var(--lemon-dd);font-weight:600">'+esc(e.statusNote)+'</span>':'')+'<span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
       '<div class="ep-ops">'+ops.join('')+'</div></div>';
-  }).join('') : '<div class="empty"><span class="e-emoji">🫙</span>'+(libFilter==='all' ? '故事库空空的,去创意工坊写第一集吧' : '这个状态下还没有故事')+'</div>';
-  const q = (sel, fn) => $('epList').querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(episodes.find(x=>x.id===b.dataset[sel.match(/data-(\w+)/)[1]]))));
-  q('[data-view]', e => viewEpisode(e));
-  q('[data-ok]', e => { e.status='approved'; saveEps(); renderLibrary(); toast('通过!可以生成配音了 🎉'); });
-  q('[data-retry]', e => { curEpId = e.id; generate(); });
-  q('[data-tts]', e => ttsGenerate(e));
-  q('[data-retts]', e => ttsGenerate(e, true));
-  q('[data-play]', e => openPlayer(e.id, 'audio'));
-  q('[data-speak]', e => openPlayer(e.id, 'speech'));
-  q('[data-edit]', e => openEditor(e));
-  q('[data-md]', e => downloadMd(e));
-  q('[data-del]', e => { if(confirm('删掉《'+e.title+'》?连音频一起删,不可恢复。')){ idbDel(e.id); episodes = episodes.filter(x=>x.id!==e.id); saveEps(); renderLibrary(); } });
+  }).join('') : '<div class="empty"><span class="e-emoji">🫙</span>'+(libFilter==='all' ? '故事库空空的，去创意工坊写第一集吧' : '这个状态下还没有故事')+'</div>';
+  const bind = (sel, key, fn) => $('epList').querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(episodes.find(x=>x.id===b.dataset[key]))));
+  bind('[data-view]','view', e => openViewModal(e));
+  bind('[data-ok]','ok', e => { e.status='approved'; saveEps(); renderLibrary(); toast('通过！可以生成配音了 🎉'); });
+  bind('[data-retry]','retry', e => { closeViewModal(); curEpId = e.id; goPage('workshop'); generate(); });
+  bind('[data-tts]','tts', e => ttsGenerate(e));
+  bind('[data-retts]','retts', e => ttsGenerate(e, true));
+  bind('[data-play]','play', e => { closeViewModal(); openPlayer(e.id, 'audio'); });
+  bind('[data-speak]','speak', e => { closeViewModal(); openPlayer(e.id, 'speech'); });
+  bind('[data-edit]','edit', e => openEditor(e));
+  bind('[data-md]','md', e => downloadMd(e));
+  bind('[data-del]','del', e => { if(confirm('删掉《'+e.title+'》？连音频一起删，不可恢复。')){ idbDel(e.id); episodes = episodes.filter(x=>x.id!==e.id); saveEps(); renderLibrary(); } });
 }
-function viewEpisode(ep){ curEpId = ep.id; handleResult(ep); goPage('workshop'); }
 
-/* ---------- 查看故事弹窗 → 用工坊结果面板展示 ---------- */
+/* ---------- 查看弹窗（故事库内直接翻阅） ---------- */
+let viewEpId = null;
+function openViewModal(ep){
+  viewEpId = ep.id;
+  const m = MOTIF_BY_ID[ep.motifId]; const f = MOTIF_FRIENDLY[ep.motifId]; const st = STATUS[ep.status];
+  $('vmTitle').textContent = ep.title;
+  $('vmStatus').innerHTML = '<span class="status-pill '+st.cls+'">'+st.emoji+' '+st.label+'</span>';
+  const rs = ep.checks || [];
+  const np = rs.filter(r=>r.level==='pass').length, nw = rs.filter(r=>r.level==='warn').length, nf = rs.filter(r=>r.level==='fail').length;
+  const judgeOk = ep.judge ? ep.judge.filter(j=>j.pass).length + '/' + ep.judge.length : null;
+  $('vmLeft').innerHTML =
+    '<div class="vm-sec">🧩 这一集的配方</div>' +
+    '<div class="vm-kv"><b>主角</b><span>'+esc(ep.protagonists.join(' · '))+'</span></div>' +
+    '<div class="vm-kv"><b>味道</b><span>'+(f?f.emoji+' '+f.name:'')+'</span></div>' +
+    '<div class="vm-kv"><b>地点</b><span>'+esc(ep.location||'')+'</span></div>' +
+    (ep.event ? '<div class="vm-kv"><b>点子</b><span>'+esc(ep.event)+'</span></div>' : '') +
+    '<div class="vm-kv"><b>彩蛋</b><span>'+(ep.legacy?'有 · 长辈的小时候':'无')+'</span></div>' +
+    (ep.special ? '<div class="vm-kv"><b>元素</b><span>'+esc(ep.special)+'</span></div>' : '') +
+    '<div class="vm-kv"><b>字数</b><span class="mono">'+(ep.wordCount||0)+' 字</span></div>' +
+    (ep.revisions ? '<div class="vm-kv"><b>修改</b><span>改过 '+ep.revisions+' 次</span></div>' : '') +
+    '<div class="vm-sec">🩺 自动体检</div>' +
+    '<div style="font-size:12.5px;line-height:1.8">✅ '+np+' 项通过 · ⚠️ '+nw+' 项待确认 · ✗ '+nf+' 项要改'+(judgeOk?'<br>🔎 审校：'+judgeOk+' 项通过':'')+'</div>' +
+    (nf || nw ? '<div style="margin-top:8px">'+renderChecklist(rs)+'</div>' : '');
+  $('vmRight').innerHTML =
+    (ep.subtitle?'<div class="result-sub" style="margin-bottom:6px">'+esc(ep.subtitle)+'</div>':'') +
+    (ep.culture?'<div class="result-culture" style="margin-bottom:12px">📍 '+esc(ep.culture)+'</div>':'') +
+    '<div class="story-text">'+storyHtml(ep.text)+'</div>';
+  const foot = [];
+  if(ep.status==='draft') foot.push('<button class="btn sm mint" id="vmApprove">✅ 通过</button>');
+  if(ep.status==='approved') foot.push('<button class="btn sm lilac" id="vmTts">🔊 生成配音</button>');
+  if(ep.status==='audio_ready'){ foot.push('<button class="btn sm lilac" id="vmListen">📻 去听</button>'); foot.push('<button class="btn sm" id="vmRetts">重配</button>'); }
+  if(ep.status==='draft'||ep.status==='approved') foot.push('<button class="btn sm" id="vmSpeak">🗣 朗读</button>');
+  foot.push('<button class="btn sm" id="vmEdit">✏️ 编辑</button>');
+  foot.push('<button class="btn sm ghost" id="vmWorkshop">🔧 去工坊修改</button>');
+  foot.push('<button class="btn sm ghost" id="vmMd">📄 .md</button>');
+  $('vmFoot').innerHTML = foot.join('');
+  const bindV = (id, fn) => { const el = $(id); if(el) el.addEventListener('click', fn); };
+  bindV('vmApprove', () => { ep.status='approved'; saveEps(); renderLibrary(); toast('通过！可以生成配音了 🎉'); openViewModal(ep); });
+  bindV('vmTts', () => { closeViewModal(); ttsGenerate(ep); });
+  bindV('vmRetts', () => { closeViewModal(); ttsGenerate(ep, true); });
+  bindV('vmListen', () => { closeViewModal(); openPlayer(ep.id, 'audio'); });
+  bindV('vmSpeak', () => { closeViewModal(); openPlayer(ep.id, 'speech'); });
+  bindV('vmEdit', () => { closeViewModal(); openEditor(ep); });
+  bindV('vmWorkshop', () => { closeViewModal(); goPage('workshop'); handleResult(ep); });
+  bindV('vmMd', () => downloadMd(ep));
+  $('viewModal').classList.remove('hidden');
+}
+function closeViewModal(){ $('viewModal').classList.add('hidden'); }
+$('vmClose').addEventListener('click', closeViewModal);
+$('viewModal').addEventListener('click', e => { if(e.target === $('viewModal')) closeViewModal(); });
+
 /* ---------- 编辑弹窗 ---------- */
 let editEpId = null;
 function openEditor(ep){
   editEpId = ep.id;
   $('emInpTitle').value = ep.title; $('emInpSub').value = ep.subtitle||''; $('emInpCulture').value = ep.culture||''; $('emTaText').value = ep.text||'';
-  $('emHint').textContent = '保存后这集会回到「写好了·待过目」'+(ep.status==='audio_ready'?',原配音会作废':'');
+  $('emHint').textContent = '保存后这集会回到「写好了·待过目」'+(ep.status==='audio_ready'?'，原配音会作废':'');
   $('editModal').classList.remove('hidden');
 }
 $('emClose').addEventListener('click', () => $('editModal').classList.add('hidden'));
@@ -1556,7 +1707,8 @@ $('emSave').addEventListener('click', () => {
   if(ep.status==='audio_ready' || ep.status==='audio_generating'){ idbDel(ep.id); ep.audio = null; }
   ep.status = 'draft';
   saveEps(); $('editModal').classList.add('hidden'); renderLibrary();
-  toast('改好了,记得再过目一次 ✏️');
+  if(viewEpId === ep.id) openViewModal(ep);
+  toast('改好了，记得再过目一次 ✏️');
 });
 
 /* ---------- 导出 / 导入 ---------- */
@@ -1571,7 +1723,7 @@ function epToMd(e){
 const downloadMd = e => downloadText(e.title.replace(/[\\/:*?"<>|]/g,'')+'.md', epToMd(e));
 $('btnExportAll').addEventListener('click', () => {
   if(!episodes.length) return toast('故事库是空的','warn');
-  downloadText('女孩宇宙-故事库-'+fmtDate(Date.now())+'.json', JSON.stringify({ exportedAt: new Date().toISOString(), episodes }, null, 2), 'application/json');
+  downloadText('小满的地图-故事库-'+fmtDate(Date.now())+'.json', JSON.stringify({ exportedAt: new Date().toISOString(), episodes }, null, 2), 'application/json');
 });
 $('btnImport').addEventListener('click', () => $('importFile').click());
 $('importFile').addEventListener('change', ev => {
@@ -1584,17 +1736,17 @@ $('importFile').addEventListener('change', ev => {
       if(!Array.isArray(arr)) throw new Error('格式不对');
       const ids = new Set(episodes.map(e=>e.id));
       arr.forEach(e => { if(e && e.id && e.text && !ids.has(e.id)){ if(!e.createdAt && e.date) e.createdAt = e.date; if(!e.motifId && e.motif) e.motifId = e.motif; episodes.push(e); } });
-      saveEps(); renderLibrary(); toast('导入完成,现在有 '+episodes.length+' 集');
-    }catch(e){ toast('导入失败:'+e.message,'err'); }
+      saveEps(); renderLibrary(); toast('导入完成，现在有 '+episodes.length+' 集');
+    }catch(e){ toast('导入失败：'+e.message,'err'); }
   };
   r.readAsText(f); ev.target.value = '';
 });
 $('btnClearEps').addEventListener('click', () => {
-  if(confirm('确认清空全部 '+episodes.length+' 集(含音频)?建议先导出。')){ episodes.forEach(e=>idbDel(e.id)); episodes = []; saveEps(); renderLibrary(); toast('已清空','warn'); }
+  if(confirm('确认清空全部 '+episodes.length+' 集（含音频）？建议先导出。')){ episodes.forEach(e=>idbDel(e.id)); episodes = []; saveEps(); renderLibrary(); toast('已清空','warn'); }
 });
 
 /* ============================================================
-   音频:IndexedDB + OpenAI 兼容 TTS
+   音频：IndexedDB + OpenAI 兼容 TTS
    ============================================================ */
 function idbOpen(){
   return new Promise((res, rej) => {
@@ -1619,33 +1771,33 @@ function chunkText(text){
   return chunks;
 }
 async function ttsGenerate(ep, force){
-  if(!ttsReady()){ toast('还没填配音服务。去「设置 → 配音服务」填一下,或者用 🗣 浏览器朗读先听','warn'); goPage('settings'); return; }
-  ep.status = 'audio_generating'; ep.audio = null; if(force) idbDel(ep.id);
+  if(!ttsReady()){ toast('还没填配音服务。去「设置 → 配音服务」填一下，或者用 🗣 浏览器朗读先听','warn'); goPage('settings'); return; }
+  ep.status = 'audio_generating'; ep.statusNote = '配音准备中'; ep.audio = null; if(force) idbDel(ep.id);
   saveEps(); renderLibrary();
   const chunks = chunkText(ep.text);
   const blobs = [];
   try{
+    let tb = cfg.tts.baseUrl.trim().replace(/\/+$/,'').replace(/(?:\/audio\/speech)+$/i, '');
     for(let i=0;i<chunks.length;i++){
-      let tb = cfg.tts.baseUrl.trim().replace(/\/+$/,'').replace(/(?:\/audio\/speech)+$/i, '');
-    const res = await fetch(tb + '/audio/speech', {
+      const res = await fetch(tb + '/audio/speech', {
         method:'POST',
         headers: { 'content-type':'application/json', 'authorization':'Bearer '+cfg.tts.apiKey },
         body: JSON.stringify({ model: cfg.tts.model || 'tts-1', voice: cfg.tts.voice || 'alloy', input: chunks[i], response_format: 'mp3' })
       });
       if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('第'+(i+1)+'段 HTTP '+res.status+(t?' · '+t.slice(0,160):'')); }
       blobs.push(await res.blob());
-      ep.audioNote = '配音中 '+(i+1)+'/'+chunks.length+' 段'; renderLibrary();
+      ep.statusNote = '配音中 '+(i+1)+'/'+chunks.length+' 段'; saveEps(); renderLibrary();
     }
     await idbPut(ep.id, new Blob(blobs, { type:'audio/mpeg' }));
     ep.status = 'audio_ready';
     ep.audio = { voice: cfg.tts.voice, generatedAt: Date.now(), segments: chunks.length };
-    ep.audioNote = '';
+    ep.statusNote = '';
     saveEps(); renderLibrary();
-    toast('配音完成,去小电台听 🎧');
+    toast('配音完成，去小电台听 🎧');
   }catch(e){
-    ep.status = 'approved'; ep.audioNote = '';
+    ep.status = 'approved'; ep.statusNote = '';
     saveEps(); renderLibrary();
-    toast('配音失败:'+e.message,'err');
+    toast('配音失败：'+e.message,'err');
   }
 }
 
@@ -1677,7 +1829,7 @@ async function openPlayer(epId, mode){
   if(useMode === 'auto') useMode = (ep.status === 'audio_ready') ? 'audio' : 'speech';
   if(useMode === 'audio' && ep.status !== 'audio_ready') useMode = 'speech';
   play.mode = useMode;
-  const m = MOTIF_BY_ID[ep.motifId], f = MOTIF_FRIENDLY[ep.motifId];
+  const f = MOTIF_FRIENDLY[ep.motifId];
   $('plEmpty').classList.add('hidden'); $('plBody').classList.remove('hidden');
   $('plTitle').textContent = ep.title;
   $('plSub').textContent = ep.subtitle || '';
@@ -1687,7 +1839,7 @@ async function openPlayer(epId, mode){
     '<span class="pill" style="background:var(--bg-2)">'+esc((ep.protagonists||[]).join(' · '))+'</span>' +
     '<span class="pill" style="background:var(--bg-2)">'+esc(ep.location||'')+'</span>' +
     '<span class="pill mono" style="background:var(--bg-2)">'+ep.wordCount+' 字 · 约 '+estMin+' 分钟</span>';
-  $('plModeTag').textContent = useMode==='audio' ? '🎧 正式配音' : '🗣 浏览器朗读(试听)';
+  $('plModeTag').textContent = useMode==='audio' ? '🎧 正式配音' : '🗣 浏览器朗读（试听）';
   $('seekRow').classList.toggle('hidden', useMode!=='audio');
   $('btnBack').classList.toggle('hidden', useMode!=='audio');
   $('btnFwd').classList.toggle('hidden', useMode!=='audio');
@@ -1696,7 +1848,7 @@ async function openPlayer(epId, mode){
   if(useMode === 'audio'){
     const blob = await idbGet(ep.id);
     if(blob){ play.blobUrl = URL.createObjectURL(blob); audioEl.src = play.blobUrl; audioEl.playbackRate = 1; }
-    else { toast('音频不见了,重新生成一下','warn'); }
+    else { toast('音频不见了，重新生成一下','warn'); }
   }
   renderSents(); updatePlayUI();
   goPage('player');
@@ -1715,7 +1867,7 @@ function switchTrack(dir){
   const i = list.findIndex(e => e.id === play.epId);
   const next = list[(i + dir + list.length) % list.length];
   if(next && next.id !== play.epId){ openPlayer(next.id, 'audio'); return; }
-  toast(dir>0 ? '后面没有啦,这是最后一集' : '前面没有啦,这是第一集');
+  toast(dir>0 ? '后面没有啦，这是最后一集' : '前面没有啦，这是第一集');
 }
 audioEl.addEventListener('ended', () => { const list = audioPlaylist(); const i = list.findIndex(e=>e.id===play.epId); if(i>=0 && i<list.length-1) openPlayer(list[i+1].id,'audio'); else updatePlayUI(); });
 audioEl.addEventListener('timeupdate', () => {
@@ -1724,10 +1876,9 @@ audioEl.addEventListener('timeupdate', () => {
   $('seekBar').style.setProperty('--prog', (audioEl.currentTime/audioEl.duration*100)+'%');
   $('tCur').textContent = fmtTime(audioEl.currentTime);
   $('tDur').textContent = fmtTime(audioEl.duration);
-  $('disc').classList.toggle('spin', !audioEl.paused);
 });
-audioEl.addEventListener('play', () => { $('disc').classList.add('spin'); updatePlayUI(); });
-audioEl.addEventListener('pause', () => { $('disc').classList.remove('spin'); updatePlayUI(); });
+audioEl.addEventListener('play', () => updatePlayUI());
+audioEl.addEventListener('pause', () => updatePlayUI());
 function fmtTime(s){ s = Math.max(0, Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
 $('seekBar').addEventListener('input', () => { if(play.mode==='audio' && audioEl.duration){ audioEl.currentTime = $('seekBar').value/1000*audioEl.duration; } });
 $('btnPrevTrack').addEventListener('click', () => switchTrack(-1));
@@ -1741,7 +1892,7 @@ $('rateSel').addEventListener('change', () => {
 });
 function playToggle(){
   if(play.mode==='audio'){
-    if(audioEl.paused) audioEl.play().catch(()=>toast('这段音频播不了,重新生成配音试试','err')); else audioEl.pause();
+    if(audioEl.paused) audioEl.play().catch(()=>toast('这段音频播不了，重新生成配音试试','err')); else audioEl.pause();
     return;
   }
   if(play.speaking){ play.speaking = false; speechSynthesis.cancel(); updatePlayUI(); return; }
@@ -1791,7 +1942,7 @@ function loadVoices(){
   const sel = $('voiceSel'); const prev = sel.value;
   sel.innerHTML = voices.length
     ? voices.map(v => '<option value="'+esc(v.name)+'">'+esc(v.name+' ('+v.lang+')')+'</option>').join('')
-    : '<option value="">(没有中文声音)</option>';
+    : '<option value="">（没有中文声音）</option>';
   if(!voices.length){ $('plTtsWarn').classList.remove('hidden'); voice = null; return; }
   $('plTtsWarn').classList.add('hidden');
   const pick = voices.find(v => prev && v.name === prev)
@@ -1813,8 +1964,7 @@ function renderSettings(){
   $('inpBase').value = c.baseUrl; $('inpKey').value = c.apiKey; $('inpModel').value = c.model;
   $('modelList').innerHTML = (cfg.provider === 'anthropic'
     ? ['claude-fable-5','claude-opus-5','claude-sonnet-5','claude-haiku-4-5']
-    : ['gpt-4o','gpt-4o-mini','deepseek-chat','glm-4-plus','qwen-max','moonshot-v1-32k']).map(m=>'<option value="'+m+'">').join('');
-  /* 三助手 */
+    : ['gpt-4o','gpt-4o-mini','deepseek-chat','deepseek-reasoner','glm-4-plus','qwen-max','moonshot-v1-32k']).map(m=>'<option value="'+m+'">').join('');
   $('agPlannerModel').value = cfg.agents.planner.model;
   $('agPlannerTemp').value = cfg.agents.planner.temperature;
   $('agPlannerTempV').textContent = (+cfg.agents.planner.temperature).toFixed(2);
@@ -1823,11 +1973,11 @@ function renderSettings(){
   $('agWriterTemp').value = cfg.agents.writer.temperature;
   $('agWriterTempV').textContent = (+cfg.agents.writer.temperature).toFixed(2);
   $('agWriterMax').value = cfg.agents.writer.maxTokens;
+  $('agWriterProtocol').value = cfg.agents.writer.protocol || OUTPUT_PROTOCOL;
   $('agJudgeModel').value = cfg.agents.judge.model;
   $('agJudgeTemp').value = cfg.agents.judge.temperature;
   $('agJudgeTempV').textContent = (+cfg.agents.judge.temperature).toFixed(2);
   $('agJudgePrompt').value = cfg.agents.judge.prompt;
-  /* TTS */
   $('ttsBase').value = cfg.tts.baseUrl; $('ttsKey').value = cfg.tts.apiKey;
   $('ttsModel').value = cfg.tts.model; $('ttsVoice').value = cfg.tts.voice;
   $('promptTa').value = promptConstant;
@@ -1838,22 +1988,31 @@ $('btnSaveApi').addEventListener('click', () => {
   const c = curProtoCfg();
   c.baseUrl = $('inpBase').value.trim() || (cfg.provider==='anthropic'?'https://api.anthropic.com':'https://api.openai.com/v1');
   c.apiKey = $('inpKey').value.trim(); c.model = $('inpModel').value.trim() || c.model;
-  saveCfg(); updateApiDot(); toast('钥匙存好了(只在这台电脑的浏览器里) 🔑');
+  saveCfg(); updateApiDot(); toast('钥匙存好了（只在这台电脑的浏览器里） 🔑');
 });
 $('btnTestApi').addEventListener('click', async () => {
   const c = curProtoCfg();
   c.baseUrl = $('inpBase').value.trim() || (cfg.provider==='anthropic'?'https://api.anthropic.com':'https://api.openai.com/v1');
   c.apiKey = $('inpKey').value.trim(); c.model = $('inpModel').value.trim() || c.model;
   saveCfg(); updateApiDot();
-  if(!apiReady()) return toast('钥匙是空的,测不了','warn');
+  if(!apiReady()) return toast('钥匙是空的，测不了','warn');
   const btn = $('btnTestApi'); btn.disabled = true; const old = btn.textContent; btn.textContent = '测试中…';
   const t0 = Date.now();
   try{
-    const out = await apiOnce('你是连通测试助手。', '只回复两个字:收到', { maxTokens: 30, temperature: 0 });
+    const coll = {};
+    const out = await apiOnce('你是连通测试助手。', '请只回复四个字：连接正常', { maxTokens: 600, temperature: 0, collect: coll });
     const secs = ((Date.now()-t0)/1000).toFixed(1);
     const r = (out||'').trim();
-    toast(r ? '✅ 连接正常!延迟 '+secs+' 秒,模型回复:「'+r.slice(0,14)+'」' : '接口通了('+secs+' 秒),但返回内容为空——多半是模型名不对');
-  }catch(e){ toast('❌ 测试失败:'+e.message,'err'); }
+    if(r){ toast('✅ 连接正常！延迟 '+secs+' 秒，模型回复：「'+r.slice(0,14)+'」'); return; }
+    const j = coll.j || {};
+    let think = '';
+    if(cfg.provider==='anthropic' && Array.isArray(j.content)){ think = j.content.filter(x=>x.type==='thinking').map(x=>x.thinking||'').join(''); }
+    if(cfg.provider!=='anthropic' && j.choices && j.choices[0]){ const msg = j.choices[0].message||{}; think = msg.reasoning_content || msg.reasoning || ''; }
+    if(think){ toast('✅ 连上了（'+secs+' 秒）！这是个「思考型」模型——它先想后说，这次把测试额度都花在「想」上了（想了 '+think.length+' 字）。写故事不受影响，放心用'); }
+    else if(j.error){ toast('❌ 服务器返回错误：'+((j.error.message&&String(j.error.message))||JSON.stringify(j.error)).slice(0,140),'err'); }
+    else if(j.choices && j.choices[0] && j.choices[0].finish_reason==='length'){ toast('连接正常（'+secs+' 秒），回复被长度上限截断了——不影响正式使用'); }
+    else { toast('❌ 接口通了（'+secs+' 秒）但返回空。服务器原话：'+JSON.stringify(j).slice(0,140)+' ——多半是模型名不对','err'); }
+  }catch(e){ toast('❌ 测试失败：'+e.message,'err'); }
   finally{ btn.disabled = false; btn.textContent = old; }
 });
 ['agPlanner','agWriter','agJudge'].forEach(id => $(id+'Temp').addEventListener('input', () => $(id+'TempV').textContent = parseFloat($(id+'Temp').value).toFixed(2)));
@@ -1864,6 +2023,7 @@ $('btnSaveAgents').addEventListener('click', () => {
   cfg.agents.writer.model = $('agWriterModel').value.trim();
   cfg.agents.writer.temperature = parseFloat($('agWriterTemp').value);
   cfg.agents.writer.maxTokens = Math.min(16000, Math.max(1000, parseInt($('agWriterMax').value)||6000));
+  cfg.agents.writer.protocol = $('agWriterProtocol').value.trim() || OUTPUT_PROTOCOL;
   cfg.agents.judge.model = $('agJudgeModel').value.trim();
   cfg.agents.judge.temperature = parseFloat($('agJudgeTemp').value);
   cfg.agents.judge.prompt = $('agJudgePrompt').value.trim() || DEFAULT_JUDGE_HEAD;
@@ -1876,12 +2036,12 @@ $('btnSaveTts').addEventListener('click', () => {
   cfg.tts.voice = $('ttsVoice').value.trim() || 'alloy';
   saveCfg(); toast('配音设置存好了 🔊');
 });
-$('btnResetPrompt').addEventListener('click', () => { $('promptTa').value = DEFAULT_CONSTANT; $('promptChars').textContent = DEFAULT_CONSTANT.length+' 字符'; toast('恢复成默认了,记得点「保存」'); });
+$('btnResetPrompt').addEventListener('click', () => { $('promptTa').value = DEFAULT_CONSTANT; $('promptChars').textContent = DEFAULT_CONSTANT.length+' 字符'; toast('恢复成默认了，记得点「保存」'); });
 $('btnSavePrompt').addEventListener('click', () => {
   promptConstant = $('promptTa').value.trim() || DEFAULT_CONSTANT;
   savePrompt(); $('promptChars').textContent = promptConstant.length+' 字符'; toast('故事圣经已保存 📜');
 });
-$('promptTa').addEventListener('input', () => { $('promptChars').textContent = $('promptTa').value.length+' 字符(还没保存)'; });
+$('promptTa').addEventListener('input', () => { $('promptChars').textContent = $('promptTa').value.length+' 字符（还没保存）'; });
 
 /* ============================================================
    初始化
