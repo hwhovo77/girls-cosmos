@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🗺️ 小满的地图 · 故事生产间</title>
+<title>小满的地图 · 故事生产间</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -144,6 +144,7 @@
   .ws-divider:hover .grip, .ws-divider.dragging .grip { background: var(--pink-d); }
   .ws-right { flex: 0 0 var(--ws-right, 56%); display: none; min-width: 320px; position: relative; padding-left: 4px; }
   .ws-wrap.open .ws-right { display: block; }
+  .ws-right .card { margin-top: 0; }
   .ws-close { position: absolute; top: 8px; right: 0px; z-index: 5; width: 30px; height: 30px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--line); box-shadow: var(--shadow-sm); font-size: 13px; color: var(--ink-3); }
   .ws-close:hover { color: var(--ink); }
 
@@ -310,6 +311,9 @@
   .vm-left .vm-sec:first-child { margin-top: 0; }
   .vm-kv { font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--line-soft); display: flex; gap: 8px; }
   .vm-kv b { flex: none; color: var(--ink-3); font-weight: 500; width: 64px; }
+  .vm-hist { display: block; width: 100%; text-align: left; padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; line-height: 1.5; }
+  .vm-hist:hover { background: var(--bg-2); }
+  .vm-hist.on { background: var(--pink); color: var(--pink-dd); font-weight: 600; }
   .vm-right { min-width: 0; max-height: calc(92vh - 170px); overflow-y: auto; padding-right: 6px; }
   @media (max-width: 900px) { .vm-grid { grid-template-columns: 1fr; } .vm-right { max-height: none; } }
 
@@ -358,7 +362,7 @@
   <section class="page" data-page="workshop">
     <div class="page-header">
       <div class="crumb">Workshop</div>
-      <h1 class="page-title"><span class="pt-emoji">🎨</span>创意工坊</h1>
+      <h1 class="page-title"><span class="pt-emoji">🎨</span>创意工坊<button class="btn sm" id="panelToggle" style="margin-left:auto;flex:none">📖 展开故事面板</button></h1>
       <p class="page-desc">选一个女孩、挑一种故事、定一个地方——剩下的交给 AI 写。写好的故事会自动存进故事库；中途切去别的页面也不影响，它会继续写完。</p>
     </div>
     <div class="page-body">
@@ -945,7 +949,8 @@ document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click'
 /* ============================================================
    排班小管家（R1-R6，文案口语化）
    ============================================================ */
-function sortedEps(){ return episodes.filter(e=>e.status!=='failed').sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); }
+function allSorted(){ return episodes.slice().sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); }
+function sortedEps(){ return allSorted().filter(e=>e.status!=='failed'); }
 function daysBetween(a,b){ return Math.abs(a-b) / 86400000; }
 function sameWeek(ts1, ts2){ const mon=d=>{ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }; return +mon(new Date(ts1))===+mon(new Date(ts2)); }
 function sameMonth(ts1, ts2){ const d1=new Date(ts1), d2=new Date(ts2); return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth(); }
@@ -1233,13 +1238,23 @@ function wsOpen(){
   $('wsWrap').classList.add('open');
   let saved = parseFloat(localStorage.getItem(LS.wsplit));
   wsApplyWidth(isFinite(saved) ? saved : 44);
+  updatePanelToggle();
 }
 function wsClose(){
   wsOpenState = false;
   $('wsWrap').classList.remove('open');
   $('wsWrap').style.removeProperty('--ws-left');
   $('wsWrap').style.removeProperty('--ws-right');
+  updatePanelToggle();
 }
+function updatePanelToggle(){ const b = $('panelToggle'); if(b) b.textContent = wsOpenState ? '📖 收起故事面板' : '📖 展开故事面板'; }
+$('panelToggle').addEventListener('click', () => {
+  if(wsOpenState){ wsClose(); return; }
+  if($('resultCard').classList.contains('hidden') && $('streamCard').classList.contains('hidden')){
+    toast('还没有故事内容——开始写故事之后会自动打开','warn'); return;
+  }
+  wsOpen();
+});
 $('wsCloseBtn').addEventListener('click', wsClose);
 (function initDivider(){
   const div = $('wsDivider'), wrap = $('wsWrap');
@@ -1359,19 +1374,37 @@ function makeEpisode(p){
     title:'（写作中…）', subtitle:'', culture:'', text:'', wordCount:0,
     motifId: p.motifId, protagonists: p.protagonists.slice(), location: p.location, locationType: p.locationType,
     legacy: p.legacy, special: p.special, event: p.event, nicknames: [],
-    status:'generating', raw:'', revisions:0, checks:null, judge:null, audio:null, statusNote:'' };
+    status:'generating', raw:'', revisions:0, checks:null, judge:null, audio:null, statusNote:'', history:[], failReason:null };
   episodes.push(ep); saveEps(); renderLibraryIfVisible();
   return ep;
 }
-async function generate(){
+function pushHistory(ep, type, note, text){
+  ep.history = ep.history || [];
+  ep.history.push({ ts: Date.now(), type, note: note||'', text: text||'' });
+  if(ep.history.length > 10) ep.history = ep.history.slice(-10);
+}
+function restoreForm(p){
+  selProtags = p.protagonists.slice(); selMotif = p.motifId;
+  $('inpLocation').value = p.location || ''; $('inpEvent').value = p.event || '';
+  $('tgLegacy').checked = !!p.legacy; $('inpSpecial').value = p.special || '';
+  renderProtags(); renderMotifGrid(); renderMotifNote();
+}
+async function generate(targetEp){
   if(!apiReady()){ toast('先去「设置」填一下 AI 钥匙 🍪','warn'); goPage('settings'); return; }
-  const p = collectParams();
-  if(!p.protagonists.length) return toast('先选一个主角呀','warn');
-  if(!p.motifId) return toast('挑一个故事味道','warn');
-  if(!p.location) return toast('地点还空着，点 🎲 换一个','warn');
-  const reuse = curEpId ? episodes.find(e=>e.id===curEpId && e.status==='failed') : null;
-  const ep = reuse || makeEpisode(p);
-  if(reuse){ Object.assign(ep, { status:'generating', title:'（写作中…）', statusNote:'', revisions: ep.revisions }); saveEps(); }
+  let p, ep;
+  if(targetEp){
+    ep = targetEp; p = paramsOf(ep); restoreForm(p);
+  } else {
+    p = collectParams();
+    if(!p.protagonists.length) return toast('先选一个主角呀','warn');
+    if(!p.motifId) return toast('挑一个故事味道','warn');
+    if(!p.location) return toast('地点还空着，点 🎲 换一个','warn');
+    const reuse = curEpId ? episodes.find(e=>e.id===curEpId && e.status==='failed') : null;
+    ep = reuse || makeEpisode(p);
+  }
+  Object.assign(ep, { status:'generating', statusNote:'' });
+  if(ep.title==='（写作中…）' || ep.title==='（未完成）') ep.title = '（写作中…）';
+  saveEps(); renderLibraryIfVisible();
   curEpId = ep.id;
   const sys = assembleSystem(p), usr = assembleUser(p);
   showStream(sys, usr);
@@ -1388,6 +1421,7 @@ async function generate(){
       else { line = '已用时 '+secs+' 秒 · 还在等第一个字（90 秒没动静会自动报错）'; note = '写作中 · 等待回应 '+secs+' 秒'; }
       const s = $('streamStat'); if(s) s.textContent = line;
       ep.statusNote = note;
+      ep.wordCount = raw ? raw.replace(/\s/g,'').length : 0;
       const now = Date.now();
       if(now - lastSave > 2500){ lastSave = now; saveEps(); renderLibraryIfVisible(); }
     };
@@ -1401,14 +1435,20 @@ async function generate(){
       tb.textContent += t; tb.scrollTop = tb.scrollHeight;
     } });
     if(!raw.trim()) throw new Error('AI 没有返回内容（接口通了但返回空——多半是模型名填错，或这个模型不支持该调用方式）');
-    Object.assign(ep, { raw, status:'draft', statusNote:'' });
+    pushHistory(ep, '初稿', '', raw);
+    Object.assign(ep, { raw, status:'draft', statusNote:'', failReason:null });
     applyParsed(ep);
     toast('写好啦，快看看 ✨');
     handleResult(ep);
   }catch(e){
-    ep.status = 'failed'; ep.statusNote = ''; saveEps();
+    ep.status = 'failed'; ep.statusNote = '';
+    ep.failReason = e.name === 'AbortError' ? '手动停止' : e.message;
+    if(raw){ ep.raw = raw; ep.text = raw.trim(); ep.wordCount = raw.replace(/\s/g,'').length; }
+    if(ep.title==='（写作中…）') ep.title = '（未完成）';
+    pushHistory(ep, '失败', ep.failReason, raw);
+    saveEps();
     if(e.name === 'AbortError') toast('停下来了，可以点「再试一次」','warn');
-    else { toast('写作失败：'+e.message,'err'); $('streamCard').classList.add('hidden'); if(!curEpId || !episodes.find(x=>x.id===curEpId && x.raw)) $('resultCard').classList.add('hidden'); }
+    else toast('写作失败：'+e.message,'err');
   }finally{ if(genTick){ clearInterval(genTick); genTick = null; } setBusy(false); genCtl = null; renderLibraryIfVisible(); }
 }
 function applyParsed(ep){
@@ -1448,11 +1488,15 @@ async function rewrite(ep, extraNote){
       const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
       tb.textContent += t; tb.scrollTop = tb.scrollHeight;
     } });
+    const oldRaw = ep.raw;
     ep.raw = raw; ep.revisions = (ep.revisions||0)+1;
+    pushHistory(ep, '修订 ×'+ep.revisions, '', oldRaw);
     applyParsed(ep);
     handleResult(ep);
     toast('改好了，再体检一下');
   }catch(e){
+    pushHistory(ep, '修订失败', e.name==='AbortError' ? '手动停止' : e.message, raw);
+    saveEps();
     if(e.name==='AbortError') toast('已停止','warn'); else toast('修订失败：'+e.message,'err');
   }finally{ if(genTick){ clearInterval(genTick); genTick=null; } setBusy(false); genCtl=null; renderLibraryIfVisible(); }
 }
@@ -1586,8 +1630,9 @@ let libFilter = 'all';
 function renderLibraryIfVisible(){ const p = document.querySelector('.page[data-page="library"]'); if(p && !p.classList.contains('hidden')) renderLibrary(); }
 function coverBg(m){ return m.density==='high' ? 'linear-gradient(135deg,var(--pink),#F9C6B4)' : m.density==='mid' ? 'linear-gradient(135deg,var(--mint),#D8F2E4)' : 'linear-gradient(135deg,var(--sky),#E2EEFB)'; }
 function renderLibrary(){
-  const eps = sortedEps();
-  const recent = eps.slice(-7);
+  const eps = allSorted();
+  const sched = sortedEps();
+  const recent = sched.slice(-7);
   $('schedStrip').innerHTML = recent.length ? recent.map(e => {
     const m = MOTIF_BY_ID[e.motifId]; const f = MOTIF_FRIENDLY[e.motifId];
     return '<div class="sched-cell" style="background:'+coverBg(m||{density:'mid'})+'"><div class="sc-date">'+fmtDate(e.createdAt)+'</div><div class="sc-name">'+(f?f.emoji:'·')+' '+(f?f.name:e.motifId)+'</div><div style="font-size:10.5px;opacity:.8">'+esc(e.protagonists[0])+' · '+esc((e.location||'').split(' · ')[0])+'</div></div>';
@@ -1618,13 +1663,13 @@ function renderLibrary(){
     return '<div class="ep-item">' +
       '<div class="ep-cover" style="background:'+coverBg(m||{density:'mid'})+'">'+(f?f.emoji:'📖')+'</div>' +
       '<div class="ep-main"><div class="ep-title">'+esc(e.title)+' <span class="status-pill '+st.cls+'"><span class="sp-dot"></span>'+st.emoji+' '+st.label+'</span></div>' +
-      '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span>'+(e.statusNote?'<span style="color:var(--lemon-dd);font-weight:600">'+esc(e.statusNote)+'</span>':'')+'<span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
+      '<div class="ep-meta"><span>'+fmtDate(e.createdAt)+'</span><span>'+(f?f.name:'')+'</span>'+(e.statusNote?'<span style="color:var(--lemon-dd);font-weight:600">'+esc(e.statusNote)+'</span>':'')+(e.status==='failed' && e.failReason ? '<span style="color:var(--bad)" title="'+esc(e.failReason)+'">⚠️ '+esc(String(e.failReason).slice(0,30))+(String(e.failReason).length>30?'…':'')+'</span>' : '')+'<span>'+esc(e.protagonists.join('·'))+'</span><span>'+esc((e.location||'').split(' · ')[0])+'</span><span class="mono">'+e.wordCount+'字</span></div></div>' +
       '<div class="ep-ops">'+ops.join('')+'</div></div>';
   }).join('') : '<div class="empty"><span class="e-emoji">🫙</span>'+(libFilter==='all' ? '故事库空空的，去创意工坊写第一集吧' : '这个状态下还没有故事')+'</div>';
   const bind = (sel, key, fn) => $('epList').querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(episodes.find(x=>x.id===b.dataset[key]))));
   bind('[data-view]','view', e => openViewModal(e));
   bind('[data-ok]','ok', e => { e.status='approved'; saveEps(); renderLibrary(); toast('通过！可以生成配音了 🎉'); });
-  bind('[data-retry]','retry', e => { closeViewModal(); curEpId = e.id; goPage('workshop'); generate(); });
+  bind('[data-retry]','retry', e => { closeViewModal(); goPage('workshop'); generate(e); });
   bind('[data-tts]','tts', e => ttsGenerate(e));
   bind('[data-retts]','retts', e => ttsGenerate(e, true));
   bind('[data-play]','play', e => { closeViewModal(); openPlayer(e.id, 'audio'); });
@@ -1636,8 +1681,18 @@ function renderLibrary(){
 
 /* ---------- 查看弹窗（故事库内直接翻阅） ---------- */
 let viewEpId = null;
-function openViewModal(ep){
+let vmVersion = -1;
+function fmtTime2(ts){ const d = new Date(ts); return fmtDate(ts)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function vmHistHtml(ep){
+  const hist = ep.history || [];
+  if(!hist.length) return '<div style="font-size:12px;color:var(--ink-3)">只有当前这一版</div>';
+  let html = hist.map((h,i)=>'<button class="vm-hist'+(i===vmVersion?' on':'')+'" data-h="'+i+'">'+fmtTime2(h.ts)+' · '+esc(h.type)+(h.note?'<br><span style="opacity:.75;font-size:11px">'+esc(String(h.note).slice(0,42))+(String(h.note).length>42?'…':'')+'</span>':'')+'</button>').join('');
+  html += '<button class="vm-hist'+(vmVersion===-1?' on':'')+'" data-h="-1">📖 当前版本</button>';
+  return html;
+}
+function openViewModal(ep, keepVersion){
   viewEpId = ep.id;
+  if(!keepVersion) vmVersion = -1;
   const m = MOTIF_BY_ID[ep.motifId]; const f = MOTIF_FRIENDLY[ep.motifId]; const st = STATUS[ep.status];
   $('vmTitle').textContent = ep.title;
   $('vmStatus').innerHTML = '<span class="status-pill '+st.cls+'">'+st.emoji+' '+st.label+'</span>';
@@ -1654,13 +1709,22 @@ function openViewModal(ep){
     (ep.special ? '<div class="vm-kv"><b>元素</b><span>'+esc(ep.special)+'</span></div>' : '') +
     '<div class="vm-kv"><b>字数</b><span class="mono">'+(ep.wordCount||0)+' 字</span></div>' +
     (ep.revisions ? '<div class="vm-kv"><b>修改</b><span>改过 '+ep.revisions+' 次</span></div>' : '') +
+    (ep.status==='failed' && ep.failReason ? '<div class="vm-sec" style="color:var(--bad)">⚠️ 失败原因</div><div style="font-size:12.5px;color:var(--bad);line-height:1.7">'+esc(ep.failReason)+'</div>' : '') +
     '<div class="vm-sec">🩺 自动体检</div>' +
     '<div style="font-size:12.5px;line-height:1.8">✅ '+np+' 项通过 · ⚠️ '+nw+' 项待确认 · ✗ '+nf+' 项要改'+(judgeOk?'<br>🔎 审校：'+judgeOk+' 项通过':'')+'</div>' +
-    (nf || nw ? '<div style="margin-top:8px">'+renderChecklist(rs)+'</div>' : '');
-  $('vmRight').innerHTML =
+    (nf || nw ? '<div style="margin-top:8px">'+renderChecklist(rs)+'</div>' : '') +
+    '<div class="vm-sec">🕰 版本历史（点一个版本看当时的样子）</div>' + vmHistHtml(ep);
+  const showText = vmVersion >= 0 ? (ep.history && ep.history[vmVersion] ? ((ep.history[vmVersion].text||'').trim() || '（这一版没有留下文稿）') : (ep.text||'')) : (ep.text||'');
+  const verTag = vmVersion >= 0 && ep.history && ep.history[vmVersion] ? '<div class="pill" style="background:var(--lemon);margin-bottom:10px">🕰 正在看历史版本：'+esc(ep.history[vmVersion].type)+'——看完点左侧「当前版本」回来</div>' : '';
+  $('vmRight').innerHTML = verTag +
     (ep.subtitle?'<div class="result-sub" style="margin-bottom:6px">'+esc(ep.subtitle)+'</div>':'') +
     (ep.culture?'<div class="result-culture" style="margin-bottom:12px">📍 '+esc(ep.culture)+'</div>':'') +
-    '<div class="story-text">'+storyHtml(ep.text)+'</div>';
+    '<div class="story-text">'+storyHtml(showText)+'</div>';
+  $('vmLeft').querySelectorAll('.vm-hist').forEach(b => b.addEventListener('click', () => {
+    vmVersion = parseInt(b.dataset.h);
+    openViewModal(ep, true);
+    $('vmRight').scrollTop = 0;
+  }));
   const foot = [];
   if(ep.status==='draft') foot.push('<button class="btn sm mint" id="vmApprove">✅ 通过</button>');
   if(ep.status==='approved') foot.push('<button class="btn sm lilac" id="vmTts">🔊 生成配音</button>');
@@ -1697,6 +1761,7 @@ $('emClose').addEventListener('click', () => $('editModal').classList.add('hidde
 $('emCancel').addEventListener('click', () => $('editModal').classList.add('hidden'));
 $('emSave').addEventListener('click', () => {
   const ep = episodes.find(e=>e.id===editEpId); if(!ep) return;
+  const oldText = ep.text;
   ep.title = $('emInpTitle').value.trim() || ep.title;
   ep.subtitle = $('emInpSub').value.trim();
   ep.culture = $('emInpCulture').value.trim();
@@ -1706,6 +1771,7 @@ $('emSave').addEventListener('click', () => {
   ep.checks = validateStory(ep.text, MOTIF_BY_ID[ep.motifId]);
   if(ep.status==='audio_ready' || ep.status==='audio_generating'){ idbDel(ep.id); ep.audio = null; }
   ep.status = 'draft';
+  pushHistory(ep, '手动编辑', '', oldText);
   saveEps(); $('editModal').classList.add('hidden'); renderLibrary();
   if(viewEpId === ep.id) openViewModal(ep);
   toast('改好了，记得再过目一次 ✏️');
