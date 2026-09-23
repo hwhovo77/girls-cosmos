@@ -193,7 +193,7 @@
   .banner button { color: var(--lemon-dd); text-decoration: underline; font-size: 13px; font-weight: 600; }
 
   .think-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-  .think-box { background: #F7EDDE; color: #8A7458; border-radius: 12px; padding: 10px 13px; font-family: var(--mono); font-size: 11.5px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+  .think-box { background: #F7EDDE; color: #8A7458; border-radius: 12px; padding: 10px 13px; font-family: var(--mono); font-size: 11.5px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
   .stream-box { background: #4A3B33; color: #F3E7D8; border-radius: 16px; padding: 18px; font-family: var(--mono); font-size: 12px; line-height: 1.75; white-space: pre-wrap; word-break: break-word; max-height: 340px; overflow-y: auto; }
   details.prompt-det { margin-top: 14px; }
   details.prompt-det summary { cursor: pointer; font-size: 12px; color: var(--ink-3); user-select: none; }
@@ -575,7 +575,7 @@
             <div class="field"><label>文风温度</label>
               <div class="slider-row"><input type="range" id="agWriterTemp" min="0" max="1" step="0.05" value="1"><span class="mono" id="agWriterTempV">1.00</span></div>
             </div>
-            <div class="field"><label>最长输出（token）</label><input type="number" id="agWriterMax" min="1000" max="16000" step="500" value="6000"></div>
+            <div class="field"><label>最长输出（token）<span class="f-hint">思考型模型（GLM／deepseek-r1 等）的思考也算额度，建议 ≥16000</span></label><input type="number" id="agWriterMax" min="1000" max="32000" step="500" value="16000"></div>
             <div class="field"><label>输出协议提示词 <span class="f-hint">管标题/副标题/正文格式和修订规矩，每次写作拼在最后</span></label><textarea id="agWriterProtocol" spellcheck="false"></textarea></div>
           </div>
           <div class="agent-card a-judge">
@@ -901,7 +901,7 @@ const DEFAULT_CFG = { provider:'anthropic',
   openai:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'gpt-4o' },
   agents:{
     planner:{ model:'', temperature:1, prompt:DEFAULT_PLANNER_PROMPT },
-    writer:{ model:'', temperature:1, maxTokens:6000, protocol:OUTPUT_PROTOCOL },
+    writer:{ model:'', temperature:1, maxTokens:16000, protocol:OUTPUT_PROTOCOL },
     judge:{ model:'', temperature:0, prompt:DEFAULT_JUDGE_HEAD },
   },
   tts:{ baseUrl:'https://api.openai.com/v1', apiKey:'', model:'tts-1', voice:'alloy' },
@@ -919,6 +919,8 @@ function loadAll(){
   cfg.agents.writer = { ...d.agents.writer, ...(cfg.agents.writer||{}) };
   cfg.agents.judge = { ...d.agents.judge, ...(cfg.agents.judge||{}) };
   cfg.tts = { ...d.tts, ...(cfg.tts||{}) };
+  /* 思考型模型的思考也消耗输出额度,旧默认 6000 会被思考吃光——一次性迁移到 16000 */
+  if(cfg.agents.writer.maxTokens === 6000 && !cfg._maxBumped){ cfg.agents.writer.maxTokens = 16000; cfg._maxBumped = true; }
   try { episodes = JSON.parse(localStorage.getItem(LS.eps)) || []; } catch(e){ episodes = []; }
   episodes.forEach(e => { if(!e.status) e.status = 'draft'; if(!e.createdAt && e.date){ e.createdAt = e.date; } });
   promptConstant = localStorage.getItem(LS.prompt) || DEFAULT_CONSTANT;
@@ -1148,14 +1150,22 @@ async function apiStream(system, user, onDelta, signal, opts){
   const wd = setInterval(() => { if(Date.now() - lastAct.t > 90000){ timedOut = true; lc.abort(); } }, 5000);
   const emit = t => { lastAct.t = Date.now(); onDelta(t); };
   const think = t => { lastAct.t = Date.now(); if(opts.onThink) opts.onThink(t); };
+  let finishReason = null;
   try{
     const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body), signal: lc.signal });
     if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error('HTTP '+res.status+(t?' · '+t.slice(0,240):'')); }
     const ctype = (res.headers.get('content-type')||'').toLowerCase();
     if(ctype.includes('json')){
+      /* 有些中转会忽略 stream 参数,整段 JSON 返回——照常处理 */
       const j = await res.json();
+      finishReason = isA ? (j.stop_reason||null) : ((j.choices&&j.choices[0]&&j.choices[0].finish_reason)||null);
+      const rsn = isA
+        ? (Array.isArray(j.content) ? j.content.filter(x=>x.type==='thinking').map(x=>x.thinking||'').join('') : '')
+        : ((j.choices&&j.choices[0]&&j.choices[0].message&&(j.choices[0].message.reasoning_content||j.choices[0].message.reasoning))||'');
+      if(rsn) think(rsn);
       const txt = isA ? ((j.content||[]).map(c=>c.text||'').join('')) : ((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'');
       if(txt) emit(txt);
+      if(opts.onMeta) opts.onMeta({ finishReason });
       return;
     }
     const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
@@ -1174,8 +1184,10 @@ async function apiStream(system, user, onDelta, signal, opts){
           if(isA){
             if(j.type==='content_block_delta' && j.delta && typeof j.delta.text==='string') emit(j.delta.text);
             else if(j.type==='content_block_delta' && j.delta && typeof j.delta.thinking==='string' && j.delta.thinking) think(j.delta.thinking);
+            if(j.type==='message_delta' && j.delta && j.delta.stop_reason) finishReason = j.delta.stop_reason;
           }
           else { const d = j.choices && j.choices[0] && j.choices[0].delta;
+            if(j.choices && j.choices[0] && j.choices[0].finish_reason) finishReason = j.choices[0].finish_reason;
             if(d){
               if(typeof d.content==='string' && d.content) emit(d.content);
               else { const rc = d.reasoning_content || d.reasoning; if(typeof rc==='string' && rc) think(rc); }
@@ -1183,6 +1195,7 @@ async function apiStream(system, user, onDelta, signal, opts){
         }catch(e){}
       }
     }
+    if(opts.onMeta) opts.onMeta({ finishReason });
   }catch(e){
     if(timedOut) throw new Error('90 秒没有收到新内容，已自动停止。常见原因：中转服务卡住、不支持流式输出、或网络不通。可在设置里点「测试连接」排查');
     if(e.name === 'AbortError' && signal && signal.aborted) throw e;
@@ -1378,9 +1391,9 @@ function makeEpisode(p){
   episodes.push(ep); saveEps(); renderLibraryIfVisible();
   return ep;
 }
-function pushHistory(ep, type, note, text){
+function pushHistory(ep, type, note, text, think){
   ep.history = ep.history || [];
-  ep.history.push({ ts: Date.now(), type, note: note||'', text: text||'' });
+  ep.history.push({ ts: Date.now(), type, note: note||'', text: text||'', think: think||'' });
   if(ep.history.length > 10) ep.history = ep.history.slice(-10);
 }
 function restoreForm(p){
@@ -1402,7 +1415,7 @@ async function generate(targetEp){
     const reuse = curEpId ? episodes.find(e=>e.id===curEpId && e.status==='failed') : null;
     ep = reuse || makeEpisode(p);
   }
-  Object.assign(ep, { status:'generating', statusNote:'' });
+  Object.assign(ep, { status:'generating', statusNote:'', thinking:'' });
   if(ep.title==='（写作中…）' || ep.title==='（未完成）') ep.title = '（写作中…）';
   saveEps(); renderLibraryIfVisible();
   curEpId = ep.id;
@@ -1426,18 +1439,35 @@ async function generate(targetEp){
       if(now - lastSave > 2500){ lastSave = now; saveEps(); renderLibraryIfVisible(); }
     };
     genTick = setInterval(updStat, 1000); updStat();
+    const meta = {};
     await apiStream(sys, usr, t => {
       raw += t;
       const box = $('streamBox'); box.textContent = raw; box.scrollTop = box.scrollHeight;
-    }, genCtl.signal, { ...opts, onThink: t => {
-      thinkLen += t.length;
-      const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
-      tb.textContent += t; tb.scrollTop = tb.scrollHeight;
-    } });
-    if(!raw.trim()) throw new Error('AI 没有返回内容（接口通了但返回空——多半是模型名填错，或这个模型不支持该调用方式）');
-    pushHistory(ep, '初稿', '', raw);
+    }, genCtl.signal, { ...opts,
+      onThink: t => {
+        thinkLen += t.length;
+        ep.thinking = (ep.thinking||'') + t;
+        if(ep.thinking.length > 30000) ep.thinking = ep.thinking.slice(-30000);
+        const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
+        tb.textContent += t; tb.scrollTop = tb.scrollHeight;
+      },
+      onMeta: m => { meta.finishReason = m.finishReason; }
+    });
+    if(!raw.trim()){
+      let why;
+      if(meta.finishReason==='length' || meta.finishReason==='max_tokens'){
+        why = '正文额度被思考用光了——模型思考了 '+thinkLen+' 字后，输出长度上限到了，一个字正文都没写。去「设置 → 写手」把「最长输出」调大（建议一万六以上）再试一次';
+      } else if(thinkLen > 0){
+        why = '模型思考了 '+thinkLen+' 字却没写正文——多半是「最长输出」额度被思考吃光，或中转在思考结束后断流。先把「设置 → 写手」的「最长输出」调到一万六以上试试';
+      } else {
+        why = 'AI 没有返回内容——多半是模型名填错，或这个模型不支持该调用方式';
+      }
+      throw new Error(why);
+    }
+    pushHistory(ep, '初稿', '', raw, ep.thinking);
     Object.assign(ep, { raw, status:'draft', statusNote:'', failReason:null });
     applyParsed(ep);
+    if(meta.finishReason==='length' || meta.finishReason==='max_tokens') toast('⚠️ 正文写到长度上限被截断了——建议去「设置 → 写手」调大「最长输出」后重新写','warn');
     toast('写好啦，快看看 ✨');
     handleResult(ep);
   }catch(e){
@@ -1445,7 +1475,7 @@ async function generate(targetEp){
     ep.failReason = e.name === 'AbortError' ? '手动停止' : e.message;
     if(raw){ ep.raw = raw; ep.text = raw.trim(); ep.wordCount = raw.replace(/\s/g,'').length; }
     if(ep.title==='（写作中…）') ep.title = '（未完成）';
-    pushHistory(ep, '失败', ep.failReason, raw);
+    pushHistory(ep, '失败', ep.failReason, raw, ep.thinking);
     saveEps();
     if(e.name === 'AbortError') toast('停下来了，可以点「再试一次」','warn');
     else toast('写作失败：'+e.message,'err');
@@ -1478,6 +1508,8 @@ async function rewrite(ep, extraNote){
   showStream(assembleSystem(paramsOf(ep)), usr);
   setBusy(true); genCtl = new AbortController();
   let raw = '';
+  const prevThink = ep.thinking || '';
+  ep.thinking = '';
   try{
     const opts = agentOpts('writer');
     const t0 = Date.now(); let thinkLen = 0;
@@ -1485,17 +1517,21 @@ async function rewrite(ep, extraNote){
     genTick = setInterval(updStat, 1000); updStat();
     await apiStream(assembleSystem(paramsOf(ep)), usr, t => { raw += t; const box=$('streamBox'); box.textContent=raw; box.scrollTop=box.scrollHeight; }, genCtl.signal, { ...opts, onThink: t => {
       thinkLen += t.length;
+      ep.thinking = (ep.thinking||'') + t;
+      if(ep.thinking.length > 30000) ep.thinking = ep.thinking.slice(-30000);
       const tb = $('thinkBox'); tb.classList.remove('hidden'); $('thinkLabel').classList.remove('hidden');
       tb.textContent += t; tb.scrollTop = tb.scrollHeight;
     } });
+    if(!raw.trim()) throw new Error('修订没有返回内容——多半是「最长输出」额度被思考吃光，去「设置 → 写手」调大后再试');
     const oldRaw = ep.raw;
     ep.raw = raw; ep.revisions = (ep.revisions||0)+1;
-    pushHistory(ep, '修订 ×'+ep.revisions, '', oldRaw);
+    pushHistory(ep, '修订 ×'+ep.revisions, '', oldRaw, prevThink);
     applyParsed(ep);
     handleResult(ep);
     toast('改好了，再体检一下');
   }catch(e){
-    pushHistory(ep, '修订失败', e.name==='AbortError' ? '手动停止' : e.message, raw);
+    ep.thinking = prevThink + '\n——(本次修订中断,思考草稿如下)——\n' + (ep.thinking||'');
+    pushHistory(ep, '修订失败', e.name==='AbortError' ? '手动停止' : e.message, raw, ep.thinking);
     saveEps();
     if(e.name==='AbortError') toast('已停止','warn'); else toast('修订失败：'+e.message,'err');
   }finally{ if(genTick){ clearInterval(genTick); genTick=null; } setBusy(false); genCtl=null; renderLibraryIfVisible(); }
@@ -1708,6 +1744,7 @@ function openViewModal(ep, keepVersion){
     '<div class="vm-kv"><b>彩蛋</b><span>'+(ep.legacy?'有 · 长辈的小时候':'无')+'</span></div>' +
     (ep.special ? '<div class="vm-kv"><b>元素</b><span>'+esc(ep.special)+'</span></div>' : '') +
     '<div class="vm-kv"><b>字数</b><span class="mono">'+(ep.wordCount||0)+' 字</span></div>' +
+    (ep.thinking ? '<div class="vm-kv"><b>思考</b><span class="mono">'+ep.thinking.length+' 字</span></div>' : '') +
     (ep.revisions ? '<div class="vm-kv"><b>修改</b><span>改过 '+ep.revisions+' 次</span></div>' : '') +
     (ep.status==='failed' && ep.failReason ? '<div class="vm-sec" style="color:var(--bad)">⚠️ 失败原因</div><div style="font-size:12.5px;color:var(--bad);line-height:1.7">'+esc(ep.failReason)+'</div>' : '') +
     '<div class="vm-sec">🩺 自动体检</div>' +
@@ -1715,8 +1752,10 @@ function openViewModal(ep, keepVersion){
     (nf || nw ? '<div style="margin-top:8px">'+renderChecklist(rs)+'</div>' : '') +
     '<div class="vm-sec">🕰 版本历史（点一个版本看当时的样子）</div>' + vmHistHtml(ep);
   const showText = vmVersion >= 0 ? (ep.history && ep.history[vmVersion] ? ((ep.history[vmVersion].text||'').trim() || '（这一版没有留下文稿）') : (ep.text||'')) : (ep.text||'');
+  const curThink = vmVersion >= 0 ? ((ep.history||[])[vmVersion] ? (ep.history[vmVersion].think||'') : '') : (ep.thinking||'');
+  const thinkBlock = curThink ? '<details class="prompt-det" style="margin:0 0 14px"><summary>💭 AI 的思考草稿（'+curThink.length+' 字）——点开看</summary><div class="think-box" style="max-height:260px;margin:8px 0 0">'+esc(curThink)+'</div></details>' : '';
   const verTag = vmVersion >= 0 && ep.history && ep.history[vmVersion] ? '<div class="pill" style="background:var(--lemon);margin-bottom:10px">🕰 正在看历史版本：'+esc(ep.history[vmVersion].type)+'——看完点左侧「当前版本」回来</div>' : '';
-  $('vmRight').innerHTML = verTag +
+  $('vmRight').innerHTML = verTag + thinkBlock +
     (ep.subtitle?'<div class="result-sub" style="margin-bottom:6px">'+esc(ep.subtitle)+'</div>':'') +
     (ep.culture?'<div class="result-culture" style="margin-bottom:12px">📍 '+esc(ep.culture)+'</div>':'') +
     '<div class="story-text">'+storyHtml(showText)+'</div>';
@@ -2088,7 +2127,7 @@ $('btnSaveAgents').addEventListener('click', () => {
   cfg.agents.planner.prompt = $('agPlannerPrompt').value.trim() || DEFAULT_PLANNER_PROMPT;
   cfg.agents.writer.model = $('agWriterModel').value.trim();
   cfg.agents.writer.temperature = parseFloat($('agWriterTemp').value);
-  cfg.agents.writer.maxTokens = Math.min(16000, Math.max(1000, parseInt($('agWriterMax').value)||6000));
+  cfg.agents.writer.maxTokens = Math.min(32000, Math.max(1000, parseInt($('agWriterMax').value)||16000));
   cfg.agents.writer.protocol = $('agWriterProtocol').value.trim() || OUTPUT_PROTOCOL;
   cfg.agents.judge.model = $('agJudgeModel').value.trim();
   cfg.agents.judge.temperature = parseFloat($('agJudgeTemp').value);
